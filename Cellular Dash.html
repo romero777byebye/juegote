@@ -1,0 +1,3138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Cellular Dash: Misión Inmunológica - Videojuego educativo sobre biología celular, inmunología y sistema circulatorio. Proyecto de Lesly Yeraldine Ruiz Jaimes, Emma Gabriela Palacios Beltran grado 10-3.">
+<title>Cellular Dash: Misión Inmunológica</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+/* Configuración de Tailwind: se aplica solo si el CDN cargó (permite uso sin conexión) */
+if (window.tailwind) {
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#050714',
+          cy: '#22d3ee',
+          mg: '#f472b6',
+          em: '#34d399',
+          yl: '#facc15'
+        },
+        fontFamily: {
+          display: ['Orbitron', 'Segoe UI', 'system-ui', 'sans-serif'],
+          body: ['Rajdhani', 'Segoe UI', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  };
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    background: #050714; color: #e2e8f0;
+    font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  #app { position: fixed; inset: 0; }
+  .screen { position: absolute; inset: 0; display: none; }
+  .screen.active { display: flex; }
+  .panel {
+    background: linear-gradient(160deg, rgba(15,23,42,.92), rgba(30,12,52,.88));
+    border: 1px solid rgba(34,211,238,.28);
+    box-shadow: 0 0 40px rgba(34,211,238,.12), inset 0 0 60px rgba(88,28,135,.18);
+    backdrop-filter: blur(6px);
+  }
+  .neon-title {
+    background: linear-gradient(92deg, #67e8f9 0%, #22d3ee 30%, #a78bfa 65%, #f472b6 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 18px rgba(34,211,238,.55)) drop-shadow(0 0 42px rgba(167,139,250,.35));
+  }
+  .btn-neon {
+    position: relative; display: block; width: 100%;
+    padding: .7rem 1.1rem; border-radius: .65rem;
+    font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: .09em;
+    font-size: .86rem; text-transform: uppercase; text-align: center;
+    color: #cffafe; background: linear-gradient(90deg, rgba(8,145,178,.22), rgba(126,34,206,.22));
+    border: 1px solid rgba(34,211,238,.45);
+    box-shadow: 0 0 14px rgba(34,211,238,.18), inset 0 0 18px rgba(34,211,238,.08);
+    cursor: pointer; transition: transform .12s ease, box-shadow .18s ease, background .18s ease;
+    user-select: none; -webkit-user-select: none;
+  }
+  .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 0 26px rgba(34,211,238,.45), inset 0 0 24px rgba(34,211,238,.16); background: linear-gradient(90deg, rgba(8,145,178,.4), rgba(126,34,206,.36)); }
+  .btn-neon:active { transform: translateY(0); }
+  .btn-neon.pink { color: #fce7f3; border-color: rgba(244,114,182,.5); box-shadow: 0 0 14px rgba(244,114,182,.2); background: linear-gradient(90deg, rgba(190,24,93,.24), rgba(126,34,206,.24)); }
+  .btn-neon.pink:hover { box-shadow: 0 0 26px rgba(244,114,182,.45); }
+  .btn-neon.green { color: #d1fae5; border-color: rgba(52,211,153,.5); background: linear-gradient(90deg, rgba(5,150,105,.24), rgba(13,148,136,.24)); }
+  .btn-neon.green:hover { box-shadow: 0 0 26px rgba(52,211,153,.45); }
+  .btn-neon:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .18rem .6rem; border-radius: 999px; font-size: .68rem;
+    font-family: 'Orbitron', sans-serif; letter-spacing: .08em; text-transform: uppercase;
+    border: 1px solid rgba(148,163,184,.35); color: #cbd5e1; background: rgba(15,23,42,.6);
+  }
+  .hud-bar { position: relative; height: 100%; border-radius: 999px; overflow: hidden; background: rgba(2,6,23,.8); box-shadow: inset 0 0 8px rgba(0,0,0,.8); }
+  .hud-fill { height: 100%; border-radius: 999px; transition: width .18s ease, background-color .35s ease; }
+  .kbd {
+    display: inline-block; min-width: 1.6rem; padding: .1rem .42rem; text-align: center;
+    border-radius: .3rem; border: 1px solid rgba(34,211,238,.5); background: rgba(8,47,73,.6);
+    color: #a5f3fc; font-family: 'Orbitron', sans-serif; font-size: .68rem;
+  }
+  .scroll-thin::-webkit-scrollbar { width: 8px; }
+  .scroll-thin::-webkit-scrollbar-track { background: rgba(15,23,42,.5); border-radius: 8px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: rgba(34,211,238,.4); border-radius: 8px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: linear-gradient(90deg,#22d3ee,#a78bfa); outline: none; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%;
+    background: #e0f2fe; border: 2px solid #22d3ee; cursor: pointer; box-shadow: 0 0 10px rgba(34,211,238,.8);
+  }
+  .fade-in { animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: none;} }
+  .pulse-soft { animation: pulseSoft 2.4s ease-in-out infinite; }
+  @keyframes pulseSoft { 0%,100% { opacity:.65;} 50% { opacity:1;} }
+  .float-slow { animation: floatSlow 7s ease-in-out infinite; }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-10px);} }
+  .touch-btn {
+    position: absolute; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px; font-family: 'Orbitron', sans-serif; font-size: .68rem; font-weight: 700;
+    letter-spacing: .06em; color: #cffafe; border: 2px solid rgba(34,211,238,.55);
+    background: rgba(8,47,73,.5); box-shadow: 0 0 18px rgba(34,211,238,.28);
+    user-select: none; -webkit-user-select: none; touch-action: none; z-index: 30;
+  }
+  .touch-btn:active { background: rgba(34,211,238,.35); }
+  #joyBase {
+    position: absolute; width: 132px; height: 132px; border-radius: 50%;
+    border: 2px solid rgba(34,211,238,.4); background: rgba(8,47,73,.35);
+    touch-action: none; z-index: 30; display: none;
+  }
+  #joyKnob {
+    position: absolute; width: 56px; height: 56px; border-radius: 50%; left: 38px; top: 38px;
+    background: radial-gradient(circle at 35% 30%, #67e8f9, #0e7490);
+    box-shadow: 0 0 18px rgba(34,211,238,.7); touch-action: none;
+  }
+  .tooltip-wrap:hover .tooltip { opacity: 1; pointer-events: none; }
+  .tooltip { opacity: 0; transition: opacity .15s ease; }
+  canvas { display: block; touch-action: none; }
+  .vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(2,4,16,.75) 100%); }
+  .scanlines { position: absolute; inset: 0; pointer-events: none; opacity: .16;
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,.09) 0 1px, transparent 1px 3px); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== ESCENARIO DE JUEGO ===================== -->
+  <section id="screen-stage" class="screen items-center justify-center bg-ink">
+    <div id="stageWrap" class="relative w-full h-full">
+      <canvas id="gameCanvas"></canvas>
+      <div class="vignette"></div>
+      <div class="scanlines"></div>
+
+      <!-- HUD -->
+      <div id="hud" class="absolute inset-0 pointer-events-none select-none">
+        <!-- Superior izquierda: salud + puntuación -->
+        <div class="absolute top-2 left-2 sm:top-3 sm:left-3 space-y-1.5 w-[46%] max-w-[300px]">
+          <div class="panel rounded-lg px-2 py-1.5">
+            <div class="flex items-center justify-between text-[10px] sm:text-xs font-display tracking-widest text-cyan-200">
+              <span>INTEGRIDAD</span><span id="hudHpText">100 / 100</span>
+            </div>
+            <div class="hud-bar h-2.5 sm:h-3 mt-1">
+              <div id="hudHpBar" class="hud-fill" style="width:100%;background-color:#34d399"></div>
+            </div>
+          </div>
+          <div class="panel rounded-lg px-2 py-1 flex items-center justify-between">
+            <span class="text-[10px] sm:text-xs font-display tracking-widest text-cyan-200">PUNTOS</span>
+            <span id="hudScore" class="text-sm sm:text-base font-display font-bold text-yellow-300 drop-shadow-[0_0_8px_rgba(250,204,21,.8)]">0</span>
+          </div>
+        </div>
+
+        <!-- Superior centro: nivel + velocidad -->
+        <div class="absolute top-2 left-1/2 -translate-x-1/2 sm:top-3 text-center w-[52%] max-w-[360px]">
+          <div class="panel rounded-lg px-2 py-1">
+            <div id="hudLevelName" class="text-[11px] sm:text-sm font-display font-bold tracking-[.15em] text-fuchsia-300">NIVEL 1 · CAPILARES</div>
+            <div id="hudLevelDesc" class="text-[10px] sm:text-xs text-cyan-100/70 leading-tight">Enemigos eliminados: 0 / 15</div>
+            <div class="flex items-center justify-center gap-1.5 mt-1">
+              <span class="text-[9px] sm:text-[10px] font-display tracking-widest text-slate-300">VELOCIDAD</span>
+              <span id="hudSpeedTag" class="chip !py-0 !text-[9px] sm:!text-[10px] border-cyan-400/60 text-cyan-200">MEDIA ×1.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Superior derecha: tiempo + enemigos -->
+        <div class="absolute top-2 right-2 sm:top-3 sm:right-3 space-y-1.5 w-[40%] max-w-[240px] text-right">
+          <div class="panel rounded-lg px-2 py-1">
+            <div class="text-[10px] sm:text-xs font-display tracking-widest text-cyan-200">TIEMPO</div>
+            <div id="hudTime" class="text-base sm:text-xl font-display font-bold text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,.7)]">00:00</div>
+          </div>
+          <div class="panel rounded-lg px-2 py-1">
+            <div class="text-[10px] sm:text-xs font-display tracking-widest text-cyan-200">AMENAZAS <span id="hudEnemyCount" class="text-white font-bold">0</span></div>
+            <div id="hudThreat" class="text-[10px] sm:text-xs text-slate-300">Presión controlada</div>
+          </div>
+        </div>
+
+        <!-- Inferior izquierda: micrófono / vúmetro -->
+        <div class="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 w-[54%] max-w-[280px]">
+          <div class="panel rounded-lg px-2 py-1.5">
+            <div class="flex items-center justify-between text-[10px] sm:text-xs font-display tracking-widest">
+              <span class="text-cyan-200">SOPLO / ESCUDO</span>
+              <span id="hudMicState" class="text-slate-300">Micrófono desactivado</span>
+            </div>
+            <div class="hud-bar h-2 mt-1">
+              <div id="hudMicBar" class="hud-fill" style="width:0%;background-color:#22d3ee"></div>
+            </div>
+            <div class="flex items-center justify-between mt-1 text-[10px] sm:text-[11px]">
+              <span id="hudBlow" class="text-slate-400">Soplo: en espera</span>
+              <span id="hudShield" class="font-display tracking-wider text-emerald-300">ESCUDO LISTO (Shift)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inferior derecha: ayuda rápida -->
+        <div class="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 text-right hidden md:block">
+          <div class="panel rounded-lg px-2.5 py-1.5 text-[11px] leading-relaxed text-cyan-100/80">
+            <div><span class="kbd">W</span><span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span> mover · <span class="kbd">Espacio</span> disparar</div>
+            <div><span class="kbd">Shift</span> escudo · <span class="kbd">Esc</span> pausa · clic para apuntar</div>
+          </div>
+        </div>
+
+        <!-- Aviso de nivel -->
+        <div id="hudBanner" class="absolute top-1/4 left-1/2 -translate-x-1/2 text-center opacity-0 transition-opacity duration-300">
+          <div id="hudBannerText" class="font-display text-2xl sm:text-4xl font-black tracking-[.2em] text-white drop-shadow-[0_0_20px_rgba(167,139,250,.9)]"></div>
+        </div>
+      </div>
+
+      <!-- Controles táctiles -->
+      <div id="touchLayer" class="absolute inset-0 hidden">
+        <div id="joyBase"><div id="joyKnob"></div></div>
+        <button id="btnFire" class="touch-btn" style="right:18px;bottom:120px;width:92px;height:92px;">DISPARO</button>
+        <button id="btnShield" class="touch-btn" style="right:120px;bottom:36px;width:76px;height:76px;border-color:rgba(52,211,153,.6);color:#d1fae5;">ESCUDO</button>
+        <button id="btnPause" class="touch-btn" style="right:16px;top:88px;width:52px;height:52px;font-size:.6rem;">II</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MENÚ PRINCIPAL ===================== -->
+  <section id="screen-menu" class="screen active items-center justify-center bg-gradient-to-b from-slate-950/70 via-slate-950/45 to-slate-950/85">
+    <div class="relative z-10 w-full max-w-3xl px-4 py-6 text-center">
+      <div class="float-slow">
+        <div class="chip mx-auto mb-3 border-cyan-400/60 text-cyan-200">Proyecto educativo · Biología celular</div>
+        <h1 class="neon-title font-display font-black leading-none text-4xl sm:text-6xl md:text-7xl tracking-[.06em]">CELLULAR DASH</h1>
+        <div class="mt-1 font-display font-bold tracking-[.42em] text-fuchsia-300 text-sm sm:text-xl drop-shadow-[0_0_14px_rgba(244,114,182,.8)]">MISIÓN INMUNOLÓGICA</div>
+      </div>
+      <p class="mt-4 text-cyan-100/85 text-sm sm:text-lg max-w-xl mx-auto leading-snug">
+        «Tu organismo necesita un defensor. Sobrevive, aprende y protege el sistema circulatorio».
+      </p>
+
+      <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-2xl mx-auto">
+        <button id="btnStart" class="btn-neon green sm:col-span-2 !py-3.5 !text-base">▶ Iniciar misión</button>
+        <button id="btnRanking" class="btn-neon">🏆 Ver ranking escolar</button>
+        <button id="btnHowTo" class="btn-neon">🎮 Cómo jugar</button>
+        <button id="btnEncyclopedia" class="btn-neon">🧬 Enciclopedia biológica</button>
+        <button id="btnSettings" class="btn-neon">⚙ Ajustes</button>
+        <button id="btnCredits" class="btn-neon pink sm:col-span-2">ℹ Créditos del proyecto</button>
+      </div>
+
+      <p class="mt-5 text-[11px] sm:text-xs text-slate-400/80 max-w-2xl mx-auto leading-relaxed">
+        <strong class="text-cyan-300">Nota educativa:</strong> los proyectiles de plasma, el escudo de pulso y las ondas expansivas son
+        <em>recursos ficticios de juego</em> diseñados para convertir conceptos de inmunología en mecánicas divertidas.
+        En la vida real, los glóbulos blancos no disparan energía ni generan ondas de choque: defienden al organismo mediante
+        fagocitosis, señalización química y producción de anticuerpos.
+      </p>
+      <p class="mt-2 text-[11px] text-slate-500">Lesly Yeraldine Ruiz Jaimes / Emma Gabriela Palacios Beltran · Grado 10-3 · Electrónica en Programación de Software / Tecnología y Creatividad</p>
+    </div>
+  </section>
+
+  <!-- ===================== PREPARACIÓN DE MISIÓN ===================== -->
+  <section id="screen-briefing" class="screen items-center justify-center bg-gradient-to-b from-slate-950/75 via-slate-950/55 to-slate-950/85">
+    <div class="relative z-10 panel rounded-2xl max-w-3xl w-full mx-3 p-4 sm:p-6 fade-in max-h-[94vh] overflow-y-auto scroll-thin">
+      <h2 class="font-display text-xl sm:text-3xl font-black tracking-[.14em] text-cyan-300 drop-shadow-[0_0_14px_rgba(34,211,238,.6)]">PREPARACIÓN DE MISIÓN</h2>
+      <p class="mt-1 text-sm text-cyan-100/80">Un glóbulo blanco depende de tus reflejos. Revisa los controles y decide si activas el detector de soplo.</p>
+
+      <div class="grid sm:grid-cols-2 gap-3 mt-4 text-sm">
+        <div class="rounded-xl border border-cyan-400/25 bg-slate-900/50 p-3">
+          <h3 class="font-display text-xs tracking-[.18em] text-fuchsia-300 mb-2">CONTROLES</h3>
+          <ul class="space-y-1.5 text-cyan-100/85">
+            <li><span class="kbd">W</span><span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span> / flechas: movimiento 360°</li>
+            <li><span class="kbd">Espacio</span> o clic: disparar flechas de plasma</li>
+            <li>Mover el ratón: apuntar (si no hay ratón, se dispara hacia el movimiento)</li>
+            <li><span class="kbd">Shift</span>: Escudo de Pulso Inmune</li>
+            <li><span class="kbd">Esc</span>: pausar la partida</li>
+            <li>Móvil: joystick virtual + botones DISPARO y ESCUDO</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-emerald-400/25 bg-slate-900/50 p-3">
+          <h3 class="font-display text-xs tracking-[.18em] text-emerald-300 mb-2">ESCUDO DE PULSO INMUNE</h3>
+          <ul class="space-y-1.5 text-emerald-100/85">
+            <li>🫁 <strong>Sopla fuerte</strong> al micrófono para activarlo.</li>
+            <li>Genera una onda expansiva que daña y aleja enemigos cercanos.</li>
+            <li>Otorga <strong>3 segundos exactos</strong> de invulnerabilidad.</li>
+            <li>Tiene un tiempo de enfriamiento visible en el HUD.</li>
+            <li>Sin micrófono, usa <span class="kbd">Shift</span>: la habilidad es idéntica.</li>
+            <li class="text-amber-200/80">El detector responde a picos de amplitud: ruidos fuertes también pueden activarlo.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4 rounded-xl border border-amber-300/25 bg-amber-500/5 p-3">
+        <h3 class="font-display text-xs tracking-[.18em] text-amber-300 mb-1">DETECTOR DE SOPLO (OPCIONAL)</h3>
+        <p class="text-xs text-amber-100/80 leading-relaxed">
+          El audio se procesa <strong>solo en tu equipo</strong> para medir la intensidad de la señal. No se graba, no se almacena y no se envía a ningún servidor.
+          Requiere que el navegador conceda el permiso y que exista un contexto seguro (HTTPS, localhost o apertura directa permitida por el navegador).
+        </p>
+        <div class="flex flex-wrap items-center gap-2 mt-2.5">
+          <button id="btnMicToggle" class="btn-neon !w-auto !px-4 !py-2 !text-[11px]">🎙 Activar micrófono</button>
+          <span id="briefMicStatus" class="chip">Micrófono desactivado</span>
+        </div>
+        <div class="mt-2 hidden" id="calibBox">
+          <div class="flex justify-between text-[11px] text-cyan-200"><span id="calibText">Calibrando ruido ambiental…</span><span id="calibPct">0%</span></div>
+          <div class="hud-bar h-2 mt-1"><div id="calibBar" class="hud-fill" style="width:0%;background-color:#22d3ee"></div></div>
+          <p class="text-[11px] text-slate-300/80 mt-1">Permanece en silencio durante 2 segundos para establecer la línea base.</p>
+        </div>
+
+        <!-- Prueba en vivo: permite verificar en el momento si el micrófono capta el soplo -->
+        <div id="liveTestBox" class="mt-2.5">
+          <div class="flex justify-between text-[11px] text-amber-200">
+            <span>Prueba en vivo</span>
+            <span id="liveMicState">Inactivo</span>
+          </div>
+          <div class="relative hud-bar h-2.5 mt-1 bg-slate-900/70">
+            <div id="liveMicBar" class="h-full rounded-full transition-[width] duration-75" style="width:0%;background-color:#22d3ee"></div>
+            <div id="liveMicMark" class="absolute top-[-2px] h-[14px] w-[2px] bg-amber-400" style="left:30%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+            <span>Nivel de señal</span>
+            <span id="liveMicTh">Umbral: —</span>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-300/80 mt-2">Sensibilidad actual del soplo: <strong id="briefSens" class="text-cyan-300">Media</strong> (cámbiala en Ajustes).</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-2.5 mt-4">
+        <button id="btnBriefStart" class="btn-neon green !py-3">▶ Comenzar misión</button>
+        <button id="btnBriefBack" class="btn-neon !py-3">← Volver al menú</button>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-2 text-center">Puedes jugar sin micrófono: el escudo se activa con <span class="kbd">Shift</span> o con el botón táctil.</p>
+    </div>
+  </section>
+
+  <!-- ===================== PAUSA ===================== -->
+  <section id="screen-pause" class="screen items-center justify-center bg-ink/80">
+    <div class="relative z-10 panel rounded-2xl max-w-md w-full mx-4 p-5 fade-in text-center">
+      <h2 class="font-display text-2xl sm:text-3xl font-black tracking-[.2em] text-amber-300 drop-shadow-[0_0_16px_rgba(250,204,21,.6)]">PAUSA</h2>
+      <p class="text-sm text-cyan-100/80 mt-1">La misión está detenida: el cronómetro, los enemigos y el daño están congelados.</p>
+      <div class="mt-4 space-y-2">
+        <button id="btnResume" class="btn-neon green">▶ Continuar</button>
+        <button id="btnRestart" class="btn-neon">↻ Reiniciar partida</button>
+        <button id="btnPauseSettings" class="btn-neon">⚙ Ajustes</button>
+        <button id="btnQuit" class="btn-neon pink">⌂ Volver al menú</button>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-3">Atajo: <span class="kbd">Esc</span> para continuar.</p>
+    </div>
+  </section>
+
+  <!-- ===================== MODAL EDUCATIVO DE NIVEL ===================== -->
+  <section id="screen-levelup" class="screen items-center justify-center bg-ink/85">
+    <div class="relative z-10 panel rounded-2xl max-w-2xl w-full mx-4 p-5 sm:p-7 fade-in">
+      <div class="chip mx-auto border-fuchsia-400/60 text-fuchsia-200" id="lvlChip">Transmisión científica</div>
+      <h2 id="lvlTitle" class="mt-3 font-display text-xl sm:text-3xl font-black tracking-[.12em] text-center neon-title">NIVEL COMPLETADO</h2>
+      <div class="mt-4 grid sm:grid-cols-[auto_1fr] gap-4 items-start">
+        <div class="mx-auto w-24 h-24 rounded-2xl border border-cyan-400/40 bg-slate-900/70 flex items-center justify-center text-5xl float-slow" id="lvlIcon">🧫</div>
+        <div>
+          <h3 id="lvlFactTitle" class="font-display text-sm sm:text-base tracking-[.14em] text-cyan-300">DATO CIENTÍFICO</h3>
+          <p id="lvlFact" class="mt-1.5 text-sm sm:text-base text-cyan-50/90 leading-relaxed"></p>
+          <p id="lvlRelation" class="mt-2 text-xs sm:text-sm text-emerald-100/85 leading-relaxed border-l-2 border-emerald-400/50 pl-3"></p>
+        </div>
+      </div>
+      <button id="btnLevelContinue" class="btn-neon green mt-5 !py-3">▶ Continuar la misión</button>
+      <p class="text-[11px] text-slate-400 mt-2 text-center">Se conservan tu salud, puntuación y tiempo acumulados.</p>
+    </div>
+  </section>
+
+  <!-- ===================== RETO DE REANIMACIÓN ===================== -->
+  <section id="screen-quiz" class="screen items-center justify-center bg-ink/90">
+    <div class="relative z-10 panel rounded-2xl max-w-2xl w-full mx-4 p-5 sm:p-6 fade-in max-h-[94vh] overflow-y-auto scroll-thin">
+      <div class="chip mx-auto border-red-400/60 text-red-200">Integridad celular: 0 %</div>
+      <h2 class="mt-3 font-display text-lg sm:text-2xl font-black tracking-[.14em] text-center text-red-300 drop-shadow-[0_0_16px_rgba(248,113,113,.6)]">PROTOCOLO DE REANIMACIÓN INMUNE</h2>
+      <p id="quizIntro" class="mt-2 text-sm text-cyan-100/85 text-center">Tienes una única oportunidad de demostrar tus conocimientos de biología para reactivar al glóbulo blanco.</p>
+      <div class="mt-4 rounded-xl border border-cyan-400/25 bg-slate-900/60 p-3.5">
+        <p id="quizQuestion" class="text-sm sm:text-base font-semibold text-white leading-relaxed"></p>
+        <div id="quizOptions" class="mt-3 space-y-2"></div>
+      </div>
+      <div id="quizFeedback" class="hidden mt-3 rounded-xl border p-3.5 text-sm leading-relaxed"></div>
+      <div class="mt-4 flex gap-2.5">
+        <button id="btnQuizContinue" class="btn-neon green hidden flex-1">▶ Reanudar misión</button>
+        <button id="btnQuizGameOver" class="btn-neon pink hidden flex-1">Ver resultado final</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== GAME OVER ===================== -->
+  <section id="screen-gameover" class="screen items-center justify-center">
+    <div class="relative z-10 panel rounded-2xl max-w-xl w-full mx-4 p-5 sm:p-7 fade-in max-h-[94vh] overflow-y-auto scroll-thin">
+      <h2 class="font-display text-2xl sm:text-4xl font-black tracking-[.18em] text-center text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-fuchsia-400 to-cyan-300 drop-shadow-[0_0_18px_rgba(244,63,94,.55)]">MISIÓN FINALIZADA</h2>
+      <p id="goReason" class="text-center text-sm text-cyan-100/80 mt-1">El glóbulo blanco fue superado por la infección.</p>
+
+      <div class="grid grid-cols-2 gap-2.5 mt-4 text-center">
+        <div class="rounded-xl border border-yellow-400/30 bg-yellow-500/5 p-2.5">
+          <div class="text-[10px] font-display tracking-widest text-yellow-200">PUNTUACIÓN</div>
+          <div id="goScore" class="text-2xl font-display font-black text-yellow-300">0</div>
+        </div>
+        <div class="rounded-xl border border-emerald-400/30 bg-emerald-500/5 p-2.5">
+          <div class="text-[10px] font-display tracking-widest text-emerald-200">TIEMPO</div>
+          <div id="goTime" class="text-2xl font-display font-black text-emerald-300">00:00</div>
+        </div>
+        <div class="rounded-xl border border-cyan-400/30 bg-cyan-500/5 p-2.5">
+          <div class="text-[10px] font-display tracking-widest text-cyan-200">ENEMIGOS DERROTADOS</div>
+          <div id="goKills" class="text-2xl font-display font-black text-cyan-300">0</div>
+        </div>
+        <div class="rounded-xl border border-fuchsia-400/30 bg-fuchsia-500/5 p-2.5">
+          <div class="text-[10px] font-display tracking-widest text-fuchsia-200">NIVEL ALCANZADO</div>
+          <div id="goLevel" class="text-lg sm:text-xl font-display font-black text-fuchsia-300">—</div>
+        </div>
+      </div>
+
+      <ul class="mt-3 text-xs sm:text-sm text-cyan-50/85 space-y-1">
+        <li>· Objetos recogidos: <strong id="goPickups" class="text-yellow-300">0</strong></li>
+        <li>· Reanimación utilizada: <strong id="goRevive">No</strong></li>
+        <li>· Récord personal: <strong id="goBest" class="text-emerald-300">—</strong></li>
+      </ul>
+
+      <div class="mt-4 rounded-xl border border-cyan-400/25 bg-slate-900/50 p-3">
+        <label class="text-[11px] font-display tracking-widest text-cyan-200" for="aliasInput">ALIAS DEL JUGADOR (máx. 16 caracteres)</label>
+        <div class="flex gap-2 mt-1.5">
+          <input id="aliasInput" maxlength="16" placeholder="Ej: DEFENSOR-10"
+            class="flex-1 rounded-lg bg-slate-950/80 border border-cyan-400/40 px-3 py-2 text-sm text-cyan-50 outline-none focus:border-cyan-300 focus:shadow-[0_0_14px_rgba(34,211,238,.5)]">
+          <button id="btnSaveScore" class="btn-neon !w-auto !px-4 !py-2">Guardar</button>
+        </div>
+        <p id="saveMsg" class="text-[11px] text-slate-400 mt-1.5">El ranking se guarda localmente en este navegador (no se envía a internet).</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5 mt-4">
+        <button id="btnGoRanking" class="btn-neon">🏆 Ver ranking</button>
+        <button id="btnGoAgain" class="btn-neon green">↻ Volver a jugar</button>
+        <button id="btnGoMenu" class="btn-neon pink col-span-2">⌂ Menú principal</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MODALES GENERALES ===================== -->
+  <div id="modalRoot" class="screen items-center justify-center bg-ink/85 p-3">
+    <!-- CÓMO JUGAR -->
+    <div id="modal-howto" class="modal-box hidden relative z-10 panel rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto scroll-thin p-5 sm:p-6 fade-in">
+      <h2 class="font-display text-xl sm:text-2xl font-black tracking-[.14em] text-cyan-300">CÓMO JUGAR</h2>
+      <div class="mt-3 space-y-3 text-sm text-cyan-50/88 leading-relaxed">
+        <p><strong class="text-fuchsia-300">Objetivo.</strong> Controlas un glóbulo blanco dentro del sistema circulatorio. Sobrevive el mayor tiempo posible mientras aparecen microorganismos estilizados, y aprende datos de inmunología entre niveles.</p>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div class="rounded-xl border border-cyan-400/25 bg-slate-900/50 p-3">
+            <h3 class="font-display text-xs tracking-[.18em] text-cyan-300 mb-1.5">MOVIMIENTO Y FÍSICA</h3>
+            <p class="text-xs">WASD o flechas mueven al glóbulo en 360°, incluidas diagonales normalizadas (la diagonal no es más rápida). Existe aceleración, velocidad máxima, inercia y fricción: si sueltas las teclas, la célula se detiene con suavidad. Los bordes del escenario contienen al personaje.</p>
+          </div>
+          <div class="rounded-xl border border-magenta-400/25 bg-slate-900/50 p-3">
+            <h3 class="font-display text-xs tracking-[.18em] text-pink-300 mb-1.5">DISPAROS</h3>
+            <p class="text-xs">Barra espaciadora o clic disparan flechas de plasma multicolor con cadencia limitada (no importa cuántas veces pulses: existe un tiempo mínimo entre disparos). Apuntas con el ratón; sin ratón, disparas hacia tu dirección de movimiento.</p>
+          </div>
+          <div class="rounded-xl border border-emerald-400/25 bg-slate-900/50 p-3">
+            <h3 class="font-display text-xs tracking-[.18em] text-emerald-300 mb-1.5">ESCUDO DE PULSO INMUNE</h3>
+            <p class="text-xs">Actívalo soplando al micrófono o pulsando Shift. Genera una onda expansiva que daña y empuja a los enemigos cercanos y otorga 3 segundos de invulnerabilidad. Tiene enfriamiento: no está siempre disponible.</p>
+          </div>
+          <div class="rounded-xl border border-amber-400/25 bg-slate-900/50 p-3">
+            <h3 class="font-display text-xs tracking-[.18em] text-amber-300 mb-1.5">NIVELES Y DERROTA</h3>
+            <p class="text-xs">Nivel 1 Capilares, Nivel 2 Arteria y Nivel 3 Infección Caótica — Élite. Cada nivel tiene <strong class="text-amber-300">15 enemigos exactos</strong>: solo se genera esa cantidad y el nivel avanza cuando los 15 han sido eliminados (el contador de bajas está en el HUD). Después comienza el Modo Élite de supervivencia libre, con oleadas infinitas. Al superar cada nivel recibes un dato científico. Pierdes cuando la salud llega a cero: entonces resolverás un reto de reanimación (una sola vez por partida).</p>
+          </div>
+        </div>
+        <p><strong class="text-yellow-300">Enemigos.</strong> Bacterias verdes te persiguen; bacilos ondulantes siguen trayectorias sinusoidales; virus rosados aceleran en embestidas; virus púrpuras disparan a distancia; los enemigos con anillo dorado tienen escudo energético que absorbe la mayor parte del daño hasta romperse.</p>
+        <p><strong class="text-cyan-300">Puntuación.</strong> Sumas puntos por cada enemigo derrotado, por objetos especiales, por completar niveles y por responder correctamente el reto educativo. La puntuación <em>no</em> sube con el tiempo: si no eliminas enemigos, no ganas puntos.</p>
+      </div>
+      <button class="btn-neon mt-5 modal-close">Cerrar</button>
+    </div>
+
+    <!-- ENCICLOPEDIA -->
+    <div id="modal-encyclopedia" class="modal-box hidden relative z-10 panel rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto scroll-thin p-5 sm:p-6 fade-in">
+      <h2 class="font-display text-xl sm:text-2xl font-black tracking-[.14em] text-emerald-300">ENCICLOPEDIA BIOLÓGICA</h2>
+      <p class="text-sm text-cyan-100/80 mt-1">Contenido de apoyo para grado décimo. La información científica es real; las mecánicas del juego son simplificaciones lúdicas.</p>
+      <div class="grid sm:grid-cols-2 gap-3 mt-4 text-sm" id="encyclopediaGrid"></div>
+      <button class="btn-neon mt-5 modal-close">Cerrar</button>
+    </div>
+
+    <!-- AJUSTES -->
+    <div id="modal-settings" class="modal-box hidden relative z-10 panel rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto scroll-thin p-5 sm:p-6 fade-in">
+      <h2 class="font-display text-xl sm:text-2xl font-black tracking-[.14em] text-cyan-300">AJUSTES</h2>
+      <div class="mt-4 space-y-4 text-sm">
+        <div>
+          <div class="flex justify-between text-xs font-display tracking-widest text-cyan-200"><span>VOLUMEN GENERAL</span><span id="lblMaster">70%</span></div>
+          <input id="setMaster" type="range" min="0" max="100" value="70" class="w-full mt-1.5">
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-display tracking-widest text-cyan-200"><span>MÚSICA</span><span id="lblMusic">45%</span></div>
+          <input id="setMusic" type="range" min="0" max="100" value="45" class="w-full mt-1.5">
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-display tracking-widest text-cyan-200"><span>EFECTOS DE SONIDO</span><span id="lblSfx">75%</span></div>
+          <input id="setSfx" type="range" min="0" max="100" value="75" class="w-full mt-1.5">
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-display tracking-widest text-cyan-200"><span>SENSIBILIDAD DE CONTROLES (VELOCIDAD)</span><span id="lblCtrl">100%</span></div>
+          <input id="setCtrl" type="range" min="60" max="160" value="100" class="w-full mt-1.5">
+          <p class="text-[11px] text-slate-400 mt-0.5">Modifica la velocidad máxima del glóbulo blanco.</p>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-display tracking-widest text-cyan-200"><span>SENSIBILIDAD DEL SOPLO</span><span id="lblBlow">Media</span></div>
+          <input id="setBlow" type="range" min="1" max="3" step="1" value="2" class="w-full mt-1.5">
+          <p class="text-[11px] text-slate-400 mt-0.5">Alta: el escudo se activa con soplos más suaves. Baja: exige soplos muy fuertes.</p>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-display tracking-widest text-cyan-200"><span>INTENSIDAD VISUAL</span><span id="lblFx">100%</span></div>
+          <input id="setFx" type="range" min="0" max="100" value="100" class="w-full mt-1.5">
+          <p class="text-[11px] text-slate-400 mt-0.5">Reduce partículas, brillos y sacudidas de pantalla si el equipo es lento.</p>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <label class="flex items-center gap-2 rounded-lg border border-cyan-400/25 bg-slate-900/50 px-3 py-2 cursor-pointer">
+            <input id="setMic" type="checkbox" class="accent-cyan-400 w-4 h-4">
+            <span class="text-xs">Activar micrófono para el soplo</span>
+          </label>
+          <label class="flex items-center gap-2 rounded-lg border border-cyan-400/25 bg-slate-900/50 px-3 py-2 cursor-pointer">
+            <input id="setReduced" type="checkbox" class="accent-cyan-400 w-4 h-4">
+            <span class="text-xs">Modo de movimiento reducido</span>
+          </label>
+        </div>
+        <div>
+          <span class="text-xs font-display tracking-widest text-cyan-200">PREFERENCIA DE CONTROLES</span>
+          <div class="grid grid-cols-3 gap-2 mt-1.5" id="ctrlPrefGroup">
+            <button data-pref="auto" class="btn-neon !text-[10px] !py-1.5">Automática</button>
+            <button data-pref="keyboard" class="btn-neon !text-[10px] !py-1.5">Teclado</button>
+            <button data-pref="touch" class="btn-neon !text-[10px] !py-1.5">Táctil</button>
+          </div>
+        </div>
+        <div>
+          <span class="text-xs font-display tracking-widest text-amber-200">PROGRESIÓN DE LA MISIÓN</span>
+          <div class="mt-1.5 rounded-lg border border-amber-400/30 bg-slate-900/50 px-3 py-2.5">
+            <p class="text-xs text-amber-100/90 leading-relaxed">
+              Cada nivel tiene <strong class="text-amber-300">15 enemigos exactos</strong>. Solo se avanza de nivel
+              cuando los 15 han sido eliminados; la puntuación sube únicamente por enemigos derrotados,
+              objetos recogidos y niveles completados (no con el tiempo).
+            </p>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed border-l-2 border-cyan-400/40 pl-3">
+          Los ajustes se guardan en este navegador. El micrófono se procesa localmente: no se graba audio ni se envía a servidores.
+        </p>
+      </div>
+      <div class="flex gap-2.5 mt-5">
+        <button id="btnSettingsApply" class="btn-neon green flex-1">Aplicar y cerrar</button>
+        <button id="btnSettingsReset" class="btn-neon !w-auto !px-4">Restablecer</button>
+      </div>
+    </div>
+
+    <!-- RANKING -->
+    <div id="modal-ranking" class="modal-box hidden relative z-10 panel rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto scroll-thin p-5 sm:p-6 fade-in">
+      <h2 class="font-display text-xl sm:text-2xl font-black tracking-[.14em] text-yellow-300">RANKING ESCOLAR LOCAL · TOP 5</h2>
+      <p class="text-xs text-cyan-100/75 mt-1">Orden: mayor puntuación primero; en caso de empate, mayor tiempo de supervivencia. Los datos se guardan solo en este navegador (localStorage) y no son invulnerables a modificaciones manuales.</p>
+      <div id="rankingEmpty" class="hidden mt-4 rounded-xl border border-dashed border-slate-500/50 bg-slate-900/40 p-6 text-center">
+        <p class="text-3xl">📭</p>
+        <p class="mt-2 text-sm text-slate-300">El ranking está vacío. Todavía no se ha registrado ningún resultado en este navegador.</p>
+        <p class="text-[11px] text-slate-500 mt-1">Termina una misión y usa «Guardar puntuación» para crear el primer registro.</p>
+      </div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-left text-xs sm:text-sm" id="rankingTable">
+          <thead>
+            <tr class="text-cyan-200 font-display tracking-widest text-[10px] sm:text-xs border-b border-cyan-400/30">
+              <th class="py-2 pr-2">#</th><th class="py-2 pr-2">ALIAS</th><th class="py-2 pr-2">PUNTOS</th>
+              <th class="py-2 pr-2">TIEMPO</th><th class="py-2 pr-2">NIVEL</th><th class="py-2">FECHA</th>
+            </tr>
+          </thead>
+          <tbody id="rankingBody" class="text-slate-100"></tbody>
+        </table>
+      </div>
+      <button class="btn-neon mt-5 modal-close">Cerrar</button>
+    </div>
+
+    <!-- CRÉDITOS -->
+    <div id="modal-credits" class="modal-box hidden relative z-10 panel rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto scroll-thin p-5 sm:p-6 fade-in">
+      <h2 class="font-display text-xl sm:text-2xl font-black tracking-[.14em] text-fuchsia-300">CRÉDITOS DEL PROYECTO</h2>
+      <div class="mt-4 rounded-xl border border-cyan-400/25 bg-slate-900/50 p-4">
+        <p class="font-display text-lg sm:text-xl text-white tracking-[.08em]">CELLULAR DASH: MISIÓN INMUNOLÓGICA</p>
+        <ul class="mt-3 space-y-1.5 text-sm text-cyan-50/88">
+          <li><span class="text-slate-400">Estudiante:</span> <strong>Lesly Yeraldine Ruiz Jaimes</strong></li>
+          <li><span class="text-slate-400">Grado:</span> <strong>10-3</strong></li>
+          <li><span class="text-slate-400">Asignatura:</span> <strong>Electrónica en Programación de Software / Tecnología y Creatividad</strong></li>
+          <li><span class="text-slate-400">Área científica:</span> Biología celular, inmunología, medicina humana y sistema circulatorio</li>
+        </ul>
+      </div>
+      <div class="mt-3 rounded-xl border border-emerald-400/25 bg-slate-900/50 p-4 text-sm text-cyan-50/88 leading-relaxed">
+        <h3 class="font-display text-xs tracking-[.18em] text-emerald-300 mb-1.5">TECNOLOGÍAS EMPLEADAS</h3>
+        <p>HTML5 · CSS3 · Tailwind CSS (CDN) · JavaScript ES6+ · HTML5 Canvas 2D API · Web Audio API (música y efectos sintetizados) · WebRTC/MediaDevices (captura de micrófono para el detector de soplo) · localStorage (ranking y ajustes locales).</p>
+      </div>
+      <div class="mt-3 rounded-xl border border-amber-400/25 bg-amber-500/5 p-4 text-xs text-amber-100/85 leading-relaxed">
+        <h3 class="font-display text-xs tracking-[.18em] text-amber-300 mb-1.5">NOTA CIENTÍFICA</h3>
+        <p>Los proyectiles, escudos, ondas expansivas y explosiones son recursos ficticios de diseño lúdico. Los glóbulos blancos reales defienden al organismo mediante fagocitosis, producción de anticuerpos, señalización química y cooperación entre células. Este trabajo no presenta datos de estudiantes, instituciones, docentes ni reconocimientos adicionales a los indicados.</p>
+      </div>
+      <button class="btn-neon mt-5 modal-close">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toastRoot" class="absolute left-1/2 -translate-x-1/2 bottom-24 sm:bottom-28 z-50 space-y-2 w-[90%] max-w-md pointer-events-none"></div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   CELLULAR DASH: MISIÓN INMUNOLÓGICA
+   Videojuego educativo HTML5 en un único archivo.
+   Estudiante: Lesly Yeraldine Ruiz Jaimes /Emma Gabriela Palacios Beltran · Grado 10-3
+   ===================================================================== */
+
+/* ------------------------- CONFIGURACIÓN ------------------------- */
+const CONFIG = {
+  player: {
+    radius: 20,
+    accel: 2600,
+    friction: 9.5,
+    baseMaxSpeed: 300,
+    maxHealth: 100,
+    fireCooldown: 0.17,
+    projectileSpeed: 640,
+    projectileDamage: 1,
+    projectileLife: 1.4,
+    projectileRadius: 6,
+    hitIFrames: 0.75,
+    contactKnockback: 320
+  },
+  shield: {
+    cooldown: 9,
+    invulnTime: 3,
+    maxRadius: 270,
+    expandTime: 0.5,
+    damage: 3,
+    push: 640
+  },
+  // Enemigos exactos que deben eliminarse en cada nivel para avanzar.
+  // El último nivel (Modo Élite) es infinito: no tiene killsRequired.
+  levels: [
+    { name: 'NIVEL 1 · CAPILARES', desc: 'Elimina 15 microorganismos para avanzar.',
+      speedMul: 1, hpMul: 1, spawnInterval: 1.15, maxEnemies: 10, killsRequired: 15, weight: { bacterium: 6, bacillusWavy: 2, virusFast: 1, virusRanged: 0, shielded: 0 } },
+    { name: 'NIVEL 2 · ARTERIA', desc: 'Circulación acelerada: 15 enemigos más resistentes.',
+      speedMul: 1.25, hpMul: 1.15, spawnInterval: 0.85, maxEnemies: 12, killsRequired: 15, weight: { bacterium: 4, bacillusWavy: 3, virusFast: 2, virusRanged: 1, shielded: 1 } },
+    { name: 'NIVEL 3 · INFECCIÓN CAÓTICA — ÉLITE', desc: 'Últimos 15 enemigos: variantes resistentes y con escudo.',
+      speedMul: 1.55, hpMul: 1.35, spawnInterval: 0.6, maxEnemies: 14, killsRequired: 15, weight: { bacterium: 3, bacillusWavy: 3, virusFast: 3, virusRanged: 2, shielded: 2 } },
+    { name: 'MODO ÉLITE · SUPERVIVENCIA', desc: 'Infección descontrolada: resiste el mayor tiempo posible.',
+      speedMul: 1.75, hpMul: 1.55, spawnInterval: 0.45, maxEnemies: 36, killsRequired: Infinity, weight: { bacterium: 2, bacillusWavy: 3, virusFast: 3, virusRanged: 3, shielded: 3 } }
+  ],
+  levelBonus: [0, 500, 1000, 2000, 2600],
+  scoring: {
+    quizCorrect: 250,
+    pickupScore: 75
+  },
+  enemies: {
+    bacterium:    { hp: 2, speed: 92,  radius: 18, score: 100, damage: 12, behavior: 'chase' },
+    bacillusWavy: { hp: 2, speed: 118, radius: 16, score: 130, damage: 10, behavior: 'wavy' },
+    virusFast:    { hp: 1, speed: 168, radius: 14, score: 150, damage: 10, behavior: 'dash' },
+    virusRanged:  { hp: 3, speed: 74,  radius: 17, score: 200, damage: 10, behavior: 'ranged' },
+    shielded:     { hp: 4, speed: 84,  radius: 21, score: 300, damage: 16, behavior: 'chase', shield: 7 }
+  },
+  enemyBullet: { speed: 250, radius: 5, damage: 8, life: 3.2 },
+  spawn: { margin: 70, minDistanceFromPlayer: 340, maxProjectiles: 140, maxEnemyBullets: 70, maxParticles: 460, maxShockwaves: 10 },
+  pickup: { dropChance: 0.14, life: 12, radius: 12 },
+  colors: {
+    plasma: ['#22d3ee', '#f472b6', '#facc15', '#34d399'],
+    playerCore: '#e0f7ff', playerEdge: '#22d3ee', nucleus: '#7c3aed'
+  }
+};
+
+/* ------------------------- UTILIDADES ------------------------- */
+const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const randInt = (a, b) => Math.floor(rand(a, b + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const dist2 = (ax, ay, bx, by) => { const dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; };
+const fmtTime = s => {
+  s = Math.max(0, Math.floor(s));
+  const m = Math.floor(s / 60), r = s % 60;
+  return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+};
+
+/* ------------------------- ALMACENAMIENTO LOCAL ------------------------- */
+const Storage = {
+  get(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed === null || parsed === undefined ? fallback : parsed;
+    } catch (err) { console.warn('[Storage] lectura fallida:', key, err); return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch (err) { console.warn('[Storage] escritura fallida:', key, err); return false; }
+  }
+};
+
+/* ------------------------- GESTOR DE AUDIO (Web Audio API) ------------------------- */
+class AudioManager {
+  constructor() {
+    this.ctx = null; this.master = null; this.musicGain = null; this.sfxGain = null;
+    this.musicNodes = null; this.musicTimer = null; this.enabled = false;
+    this.settings = { master: 0.7, music: 0.45, sfx: 0.75 };
+  }
+  ensure() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); return true; }
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { console.warn('[Audio] Web Audio API no disponible.'); return false; }
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.musicGain = this.ctx.createGain();
+      this.sfxGain = this.ctx.createGain();
+      this.musicGain.connect(this.master); this.sfxGain.connect(this.master);
+      this.master.connect(this.ctx.destination);
+      this.applyVolumes();
+      this.enabled = true;
+      return true;
+    } catch (err) { console.warn('[Audio] Error al iniciar:', err); this.enabled = false; return false; }
+  }
+  applyVolumes() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.master.gain.setTargetAtTime(clamp(this.settings.master, 0, 1), t, 0.05);
+    this.musicGain.gain.setTargetAtTime(clamp(this.settings.music, 0, 1), t, 0.05);
+    this.sfxGain.gain.setTargetAtTime(clamp(this.settings.sfx, 0, 1), t, 0.05);
+  }
+  setVolumes(v) { Object.assign(this.settings, v); this.applyVolumes(); }
+  _noiseBuffer(dur) {
+    const len = Math.max(1, Math.floor(this.ctx.sampleRate * dur));
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    return buf;
+  }
+  play(name) {
+    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+    try {
+      const t = this.ctx.currentTime, out = this.sfxGain;
+      const env = (g, peak, a, d) => {
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(peak, t + a);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
+      };
+      const tone = (type, f0, f1, peak, a, d) => {
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = type; o.frequency.setValueAtTime(f0, t);
+        if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + a + d);
+        env(g, peak, a, d); o.connect(g); g.connect(out); o.start(t); o.stop(t + a + d + 0.05);
+      };
+      const noise = (peak, a, d, filterType, freq) => {
+        const src = this.ctx.createBufferSource(); src.buffer = this._noiseBuffer(a + d);
+        const f = this.ctx.createBiquadFilter(); f.type = filterType || 'lowpass';
+        f.frequency.setValueAtTime(freq || 1200, t);
+        f.frequency.exponentialRampToValueAtTime(Math.max(80, (freq || 1200) * 0.25), t + a + d);
+        const g = this.ctx.createGain(); env(g, peak, a, d);
+        src.connect(f); f.connect(g); g.connect(out); src.start(t); src.stop(t + a + d + 0.05);
+      };
+      switch (name) {
+        case 'shoot': tone('square', 780, 260, 0.10, 0.005, 0.09); break;
+        case 'hit': noise(0.14, 0.004, 0.07, 'bandpass', 2200); break;
+        case 'explode': noise(0.30, 0.006, 0.30, 'lowpass', 900); tone('triangle', 220, 60, 0.16, 0.01, 0.26); break;
+        case 'damage': tone('sawtooth', 260, 70, 0.22, 0.01, 0.24); noise(0.18, 0.005, 0.16, 'lowpass', 600); break;
+        case 'shield': tone('sine', 180, 900, 0.26, 0.02, 0.42); noise(0.20, 0.02, 0.38, 'bandpass', 1400); break;
+        case 'shieldBreak': tone('triangle', 900, 180, 0.18, 0.005, 0.24); break;
+        case 'levelup': [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone('triangle', f, f, 0.18, 0.01, 0.22), i * 90)); break;
+        case 'pickup': tone('sine', 660, 990, 0.16, 0.01, 0.14); setTimeout(() => tone('sine', 990, 1320, 0.14, 0.01, 0.14), 70); break;
+        case 'quizOk': [523, 784, 1047].forEach((f, i) => setTimeout(() => tone('sine', f, f, 0.2, 0.01, 0.26), i * 110)); break;
+        case 'quizBad': tone('sawtooth', 300, 90, 0.2, 0.01, 0.4); break;
+        case 'gameover': [392, 330, 262, 196].forEach((f, i) => setTimeout(() => tone('triangle', f, f * 0.9, 0.2, 0.02, 0.34), i * 160)); break;
+        case 'ui': tone('sine', 880, 880, 0.09, 0.005, 0.07); break;
+        case 'revive': [262, 392, 523, 659, 784].forEach((f, i) => setTimeout(() => tone('sine', f, f * 1.01, 0.2, 0.01, 0.3), i * 100)); break;
+        default: break;
+      }
+    } catch (err) { console.warn('[Audio] play error:', err); }
+  }
+  startMusic() {
+    if (!this.ensure() || this.musicNodes) return;
+    try {
+      const ctx = this.ctx, t = ctx.currentTime;
+      const g = ctx.createGain(); g.gain.value = 0.0001; g.connect(this.musicGain);
+      const filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 780; filt.Q.value = 0.8; filt.connect(g);
+      const oscs = [];
+      [110, 164.81, 220, 329.63].forEach((f, i) => {
+        const o = ctx.createOscillator(); o.type = i % 2 ? 'sine' : 'triangle';
+        o.frequency.value = f; o.detune.value = rand(-7, 7);
+        const og = ctx.createGain(); og.gain.value = i === 0 ? 0.5 : 0.2;
+        o.connect(og); og.connect(filt); o.start(t); oscs.push(o);
+      });
+      const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.07;
+      const lg = ctx.createGain(); lg.gain.value = 260;
+      lfo.connect(lg); lg.connect(filt.frequency); lfo.start(t); oscs.push(lfo);
+      g.gain.linearRampToValueAtTime(1, t + 2.5);
+      this.musicNodes = { g, oscs, filt };
+      this.musicTimer = setInterval(() => this._musicNote(), 1350);
+    } catch (err) { console.warn('[Audio] startMusic error:', err); }
+  }
+  _musicNote() {
+    if (!this.ctx || this.ctx.state !== 'running') return;
+    try {
+      const scale = [220, 261.63, 293.66, 329.63, 392, 440];
+      const f = pick(scale) * (Math.random() < 0.35 ? 2 : 1);
+      const t = this.ctx.currentTime;
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.12, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+      o.connect(g); g.connect(this.musicGain); o.start(t); o.stop(t + 1.3);
+    } catch (e) { /* silencio */ }
+  }
+  stopMusic() {
+    if (this.musicTimer) { clearInterval(this.musicTimer); this.musicTimer = null; }
+    if (!this.musicNodes || !this.ctx) return;
+    try {
+      const { g, oscs } = this.musicNodes, t = this.ctx.currentTime;
+      g.gain.cancelScheduledValues(t);
+      g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
+      g.gain.linearRampToValueAtTime(0.0001, t + 0.6);
+      oscs.forEach(o => { try { o.stop(t + 0.7); } catch (e) { /* ya detenido */ } });
+    } catch (e) { /* silencio */ }
+    this.musicNodes = null;
+  }
+}
+const Audio2 = new AudioManager();
+/* ------------------------- CONTROLADOR DE MICRÓFONO ------------------------- */
+/**
+ * Detector de soplo basado en el nivel RMS REAL del micrófono (Web Audio API).
+ * Sin simulación: se lee la forma de onda del analyser y con eso se dispara el
+ * escudo. El audio se procesa localmente; no se graba, no se guarda y no se
+ * envía a ningún servidor.
+ *
+ * Correcciones sobre la versión anterior (el soplo no se activaba en PC ni en
+ * celular), cada una apunta a un fallo observado:
+ *  1) MUESTREO EN Float32: con getByteTimeDomainData la resolución es de 8 bits
+ *     (un paso = 1/128). Un micrófono de audífonos queda casi siempre dentro de
+ *     un solo paso y el RMS resultante era ~0 → nunca superaba el umbral.
+ *  2) CONTEXTO DE AUDIO: en móvil/Safari el AudioContext nace "suspended" y si
+ *     no se reanuda el analyser devuelve datos congelados (nivel 0 para siempre).
+ *     Se reanuda dentro del gesto de usuario y se reintenta cada 0.5 s.
+ *  3) AUTO-GANANCIA: el umbral ya no es un número fijo, sino relativo al pico
+ *     reciente de la señal, así un micrófono silencioso y uno fuerte quedan en
+ *     la misma escala 0..1.
+ *  4) UMBRAL RELATIVO AL RUIDO AMBIENTE: se compara contra la línea base
+ *     medida durante la calibración, no contra una constante.
+ */
+class MicrophoneController {
+  constructor() {
+    this.state = 'off';          // off | requesting | calibrating | active | error
+    this.stream = null; this.ctx = null; this.analyser = null; this.source = null;
+    this.dataF = null;           // Float32Array (resolución completa)
+    this.dataB = null;           // Uint8Array  (respaldo si no hay Float32)
+    this.useFloat = true;
+    this.rawRms = 0;             // RMS crudo, filtrado, de la señal
+    this.fastEma = 0;            // media rápida: permite distinguir transitorios
+    this.level = 0;              // nivel normalizado 0..1 (vúmetro)
+    this.smooth = 0;
+    this.noiseFloor = 0.004;     // ruido ambiental estimado (RMS)
+    this.peakRef = 0.05;         // pico reciente -> auto-ganancia
+    this.thresholdNorm = 0.3;    // umbral en la misma escala que `level`
+    this.sensitivityMul = 3.2;   // cuántas veces el ruido ambiente vale "soplo"
+    this.sensitivityKey = 'mid';
+    this.blowActive = false;
+    this.blowFrames = 0;
+    this.minBlowDuration = 0.045;// segundos sostenidos para validar el soplo
+    this.triggerCooldown = 0;    // evita activaciones repetidas
+    this.calibTime = 0; this.calibTotal = 2; this.calibSamples = [];
+    this.resumeCooldown = 0;     // reintento de ctx.resume() en móvil
+    this.ctxSuspended = false;   // expuesto para diagnóstico honesto en la UI
+    this.lastError = '';
+    this.onShieldReady = null;   // callback: se llama cuando se detecta un soplo válido
+    this.onStateChange = null;
+    this.onCalibProgress = null;
+  }
+  get available() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+  get shieldLockout() { return this.triggerCooldown; }
+  /** Umbral en la misma escala normalizada que `level`. */
+  get threshold() { return this.thresholdNorm; }
+  /** Diagnóstico legible para la caja de "prueba en vivo". */
+  get diagnostics() {
+    return {
+      state: this.state, ctxState: this.ctx ? this.ctx.state : 'none',
+      raw: this.rawRms, floor: this.noiseFloor, peak: this.peakRef,
+      thr: this.thresholdNorm, level: this.level, gain: this.sensitivityMul
+    };
+  }
+
+  setState(s, err) {
+    this.state = s;
+    if (err) this.lastError = err;
+    if (this.onStateChange) this.onStateChange(s, err);
+  }
+  /** Baja sensibilidad = más veces el ruido ambiente = más difícil detectar. */
+  setSensitivity(key) {
+    this.sensitivityKey = key;
+    this.sensitivityMul = { low: 5.0, mid: 3.2, high: 2.0 }[key] || 3.2;
+  }
+  async enable() {
+    if (this.state === 'active' || this.state === 'calibrating') return true;
+    if (!this.available) { this.setState('error', 'Este navegador no expone la API de micrófono (mediaDevices).'); return false; }
+    this.setState('requesting');
+
+    // (2) Crear y reanudar el contexto ANTES del await: en iOS/Android el
+    //     resume() sólo surte efecto mientras dure el gesto del usuario, y el
+    //     await de getUserMedia lo rompería.
+    const AC = window.AudioContext || window.webkitAudioContext;
+    try {
+      if (!AC) throw new Error('sin-webaudio');
+      this.ctx = new AC();
+      if (this.ctx.state === 'suspended') { try { await this.ctx.resume(); } catch (e) { /* se reintenta en update() */ } }
+    } catch (e) { this.ctx = null; }
+
+    try {
+      // noiseSuppression:false es ESSENCIAL: esos filtros eliminan justo el
+      // ruido de banda ancha del soplido, que es lo que queremos detectar.
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false, noiseSuppression: false,
+          autoGainControl: false, channelCount: 1
+        }
+      });
+      if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      if (this.ctx.state === 'suspended') { try { await this.ctx.resume(); } catch (e) { /* idem */ } }
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 1024;
+      this.analyser.smoothingTimeConstant = 0;   // sin suavizado: medimos nosotros
+      this.source = this.ctx.createMediaStreamSource(this.stream);
+      this.source.connect(this.analyser); // NO se conecta al destino: no hay retroalimentación
+      const n = this.analyser.fftSize;
+      // (1) Float32 si existe: evita la cuantización de 8 bits que dejaba
+      //     invisible a los micrófonos de audífonos.
+      if (typeof this.analyser.getFloatTimeDomainData === 'function') {
+        this.dataF = new Float32Array(n); this.useFloat = true;
+      } else {
+        this.dataB = new Uint8Array(n); this.useFloat = false;
+      }
+      this.rawRms = 0; this.level = 0; this.smooth = 0; this.fastEma = 0;
+      this.noiseFloor = 0.004; this.peakRef = 0.05;
+      this.startCalibration();
+      return true;
+    } catch (err) {
+      console.warn('[Mic] Permiso denegado o error:', err);
+      const msg = (err && err.name === 'NotAllowedError')
+        ? 'Permiso de micrófono denegado.'
+        : (err && err.name === 'NotFoundError')
+          ? 'No se detectó ningún micrófono disponible.'
+          : 'No se pudo acceder al micrófono.';
+      this.disable();
+      this.setState('error', msg);
+      return false;
+    }
+  }
+  startCalibration() {
+    this.setState('calibrating');
+    this.calibTime = 0; this.calibSamples = [];
+    this.fastEma = 0; this.rawRms = 0; this.level = 0; this.smooth = 0;
+  }
+  disable() {
+    try {
+      if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+    } catch (e) { /* silencio */ }
+    try { if (this.source) this.source.disconnect(); } catch (e) { /* silencio */ }
+    try { if (this.ctx && this.ctx.close) this.ctx.close(); } catch (e) { /* silencio */ }
+    this.stream = null; this.source = null; this.analyser = null; this.ctx = null;
+    this.dataF = null; this.dataB = null;
+    this.rawRms = 0; this.level = 0; this.smooth = 0; this.fastEma = 0;
+    this.blowActive = false; this.blowFrames = 0; this.triggerCooldown = 0;
+    this.ctxSuspended = false;
+    if (this.state !== 'error') this.setState('off');
+  }
+  /** Lee el RMS real de la forma de onda. Devuelve 0 si no hay datos útiles. */
+  readRms() {
+    if (this.useFloat && this.dataF) {
+      this.analyser.getFloatTimeDomainData(this.dataF);
+      let sum = 0;
+      for (let i = 0; i < this.dataF.length; i++) { const v = this.dataF[i]; sum += v * v; }
+      return Math.sqrt(sum / this.dataF.length);
+    }
+    if (this.dataB) {
+      this.analyser.getByteTimeDomainData(this.dataB);
+      let sum = 0;
+      for (let i = 0; i < this.dataB.length; i++) { const v = (this.dataB[i] - 128) / 128; sum += v * v; }
+      return Math.sqrt(sum / this.dataB.length);
+    }
+    return 0;
+  }
+  update(dt) {
+    if (this.triggerCooldown > 0) this.triggerCooldown = Math.max(0, this.triggerCooldown - dt);
+    if (this.state !== 'active' && this.state !== 'calibrating') {
+      this.rawRms = 0; this.level = 0; this.smooth = 0; this.blowActive = false; return;
+    }
+    if (!this.analyser) return;
+
+    // (2) Contexto suspendido -> sin datos. Reintentar reanudar automáticamente.
+    if (this.ctx && this.ctx.state !== 'running') {
+      this.ctxSuspended = true;
+      this.resumeCooldown -= dt;
+      if (this.resumeCooldown <= 0) {
+        this.resumeCooldown = 0.5;
+        Promise.resolve(this.ctx.resume()).then(() => { this.ctxSuspended = false; }).catch(() => { });
+      }
+      this.rawRms = 0; this.level = 0; this.smooth = 0; this.blowActive = false;
+      return;
+    }
+    this.ctxSuspended = false;
+
+    // RMS real (1). Baja rápido ante picos, sube suave: corta los "pops" del micro.
+    const rms = this.readRms();
+    this.rawRms = this.rawRms > rms ? lerp(this.rawRms, rms, 0.75) : lerp(this.rawRms, rms, 0.35);
+    // Media rápida de la señal (tau ~0.3 s). Un soplo es un TRANSITORIO: su RMS
+    // se dispara por encima de esta media. El ruido sostenido (ventilador,
+    // conversación de fondo, zumbido del aula) queda pegado a ella y no dispara.
+    this.fastEma = lerp(this.fastEma, this.rawRms, clamp(dt / 0.3, 0, 1));
+
+    // (3) Auto-ganancia: pico reciente de la señal. Cualquier hardware queda
+    //     normalizado a la misma escala 0..1.
+    if (this.rawRms > this.peakRef) this.peakRef = this.rawRms;
+    else this.peakRef = Math.max(this.noiseFloor * 1.6, this.peakRef * (1 - dt * 0.9));
+    const ref = Math.max(this.peakRef, 0.008);
+    this.level = clamp(this.rawRms / ref, 0, 1);
+    this.smooth = lerp(this.smooth, this.level, this.level > this.smooth ? 0.6 : 0.12);
+
+    if (this.state === 'calibrating') {
+      this.calibTime += dt;
+      this.calibSamples.push(this.rawRms);
+      const pct = clamp(this.calibTime / this.calibTotal, 0, 1);
+      if (this.onCalibProgress) this.onCalibProgress(pct, this.level);
+      if (this.calibTime >= this.calibTotal) {
+        const arr = this.calibSamples.slice().sort((a, b) => a - b);
+        const p25 = arr.length ? arr[Math.floor(arr.length * 0.25)] : 0.004;
+        const p95 = arr.length ? arr[Math.floor(arr.length * 0.95)] : p25;
+        // Línea base robusta: percentil 25 (ignora picos sueltos del entorno)
+        this.noiseFloor = clamp(p25, 0.0008, 0.5);
+        // Referencia de pico: deja margen para que un soplo modesto ya sea "1.0"
+        this.peakRef = Math.max(p95, this.noiseFloor * 2.5, 0.006);
+        this.setState('active');
+      }
+      return;
+    }
+
+    // (4) Ruido ambiental adaptativo: cae rápido, sube muy lento.
+    if (this.rawRms < this.noiseFloor * 1.15) this.noiseFloor = lerp(this.noiseFloor, this.rawRms, 0.06);
+    else this.noiseFloor = lerp(this.noiseFloor, this.rawRms, 0.004);
+    this.noiseFloor = clamp(this.noiseFloor, 0.0008, 0.5);
+
+    // Umbral relativo al ruido ambiente, con piso absoluto muy bajo.
+    // Medido en pruebas: un micrófono de auriculares con AGC desactivado puede
+    // dar un RMS de solo ~0.0014; un piso alto lo descartaría. El piso solo
+    // protege contra ruido numérico cuando el micro está mudo, porque la
+    // protección real frente al ruido del aula la aporta el transitorio.
+    const floorRaw = Math.max(this.noiseFloor * this.sensitivityMul, 0.0015);
+    this.thresholdNorm = clamp(floorRaw / ref, 0.06, 0.9);
+
+    // El soplo debe superar el umbral Y además ser un transitorio claro
+    // (más del doble de la media rápida). Así el ruido constante del aula,
+    // un ventilador o la conversación de fondo no activan el escudo.
+    const transientMul = { low: 2.9, mid: 2.1, high: 1.5 }[this.sensitivityKey] || 2.1;
+    const isTransient = this.fastEma > 0 ? (this.rawRms > this.fastEma * transientMul)
+                                         : (this.rawRms > floorRaw);
+    const isBlow = this.rawRms > floorRaw && isTransient && this.level > 0.25;
+    if (isBlow) {
+      this.blowFrames += dt;
+      if (this.blowFrames >= this.minBlowDuration && !this.blowActive && this.triggerCooldown <= 0) {
+        this.blowActive = true;
+        this.triggerCooldown = 0.9;               // protección contra activaciones repetidas
+        if (this.onShieldReady) this.onShieldReady('micro');
+      }
+    } else {
+      this.blowFrames = Math.max(0, this.blowFrames - dt * 2);
+      if (this.blowFrames <= 0) this.blowActive = false;
+    }
+  }
+}
+
+/* ------------------------- GESTOR DE ENTRADA ------------------------- */
+class InputManager {
+  constructor() {
+    this.keys = Object.create(null);
+    this.mouse = { x: 0, y: 0, inside: false, down: false, movedAt: 0 };
+    this.touch = { active: false, joyX: 0, joyY: 0, firing: false };
+    this.moveSource = 'keyboard';
+    this.enabled = true;
+    this.preventGameScroll = null;   // lo define Game: evita bloquear flechas fuera de la partida
+    this.onPause = null;
+    this.onShieldKey = null;
+    this._bind();
+  }
+  _bind() {
+    const gameKeys = new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','Escape']);
+    window.addEventListener('keydown', e => {
+      if (gameKeys.has(e.code)) {
+        const t = e.target;
+        const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA');
+        // solo bloqueamos el desplazamiento de la página cuando la misión está activa o en pausa
+        if (!typing && this.enabled && this.preventGameScroll && this.preventGameScroll()) e.preventDefault();
+      }
+      this.keys[e.code] = true;
+      if (e.repeat) return;                      // anti repetición para acciones de estado
+      if (e.code === 'Escape' && this.onPause) this.onPause();
+      if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && this.onShieldKey && this.enabled) this.onShieldKey();
+    }, { passive: false });
+    window.addEventListener('keyup', e => { this.keys[e.code] = false; });
+    window.addEventListener('blur', () => { this.keys = Object.create(null); this.mouse.down = false; this.touch.firing = false; });
+  }
+  attachCanvas(canvas) {
+    this.canvas = canvas;
+    const upd = e => {
+      const r = canvas.getBoundingClientRect();
+      this.mouse.x = e.clientX - r.left;
+      this.mouse.y = e.clientY - r.top;
+      this.mouse.inside = true;
+      this.mouse.movedAt = performance.now();
+    };
+    canvas.addEventListener('mousemove', upd);
+    canvas.addEventListener('mouseleave', () => { this.mouse.inside = false; });
+    canvas.addEventListener('mousedown', e => { if (e.button === 0) { this.mouse.down = true; upd(e); } });
+    window.addEventListener('mouseup', e => { if (e.button === 0) this.mouse.down = false; });
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+  }
+  get left()  { return this.keys['ArrowLeft'] || this.keys['KeyA']; }
+  get right() { return this.keys['ArrowRight'] || this.keys['KeyD']; }
+  get up()    { return this.keys['ArrowUp'] || this.keys['KeyW']; }
+  get down()  { return this.keys['ArrowDown'] || this.keys['KeyS']; }
+  get firing() { return this.enabled && (this.keys['Space'] || this.mouse.down || this.touch.firing); }
+  axis() {
+    let x = 0, y = 0;
+    if (this.touch.active) { x = this.touch.joyX; y = this.touch.joyY; }
+    else {
+      if (this.left) x -= 1; if (this.right) x += 1;
+      if (this.up) y -= 1;   if (this.down) y += 1;
+      // normalización diagonal obligatoria
+      const m = Math.hypot(x, y);
+      if (m > 1) { x /= m; y /= m; }
+    }
+    return { x, y };
+  }
+  clear() { this.keys = Object.create(null); this.mouse.down = false; this.touch.firing = false; this.touch.joyX = 0; this.touch.joyY = 0; }
+}
+
+/* ------------------------- SISTEMA DE PARTÍCULAS (POOLED) ------------------------- */
+class ParticleSystem {
+  constructor() {
+    this.items = []; this.pool = []; this.shockwaves = []; this.swPool = [];
+    this.intensity = 1; this.reducedMotion = false;
+    this.shakeMag = 0; this.shakeTime = 0;
+  }
+  _get() { return this.pool.pop() || {}; }
+  spawn(o) {
+    const cap = Math.floor(CONFIG.spawn.maxParticles * (0.35 + 0.65 * this.intensity));
+    if (this.items.length >= cap) this.items.shift();
+    const p = this._get();
+    p.x = o.x; p.y = o.y;
+    p.vx = o.vx || 0; p.vy = o.vy || 0;
+    p.life = 0; p.maxLife = o.maxLife || 0.6;
+    p.size = o.size || 3; p.color = o.color || '#22d3ee';
+    p.drag = o.drag === undefined ? 2.2 : o.drag;
+    p.glow = o.glow === undefined ? true : o.glow;
+    p.grow = o.grow || 0;
+    this.items.push(p);
+  }
+  burst(x, y, count, color, speed, size, maxLife) {
+    if (this.reducedMotion) count = Math.ceil(count * 0.4);
+    count = Math.max(1, Math.round(count * (0.5 + 0.5 * this.intensity)));
+    for (let i = 0; i < count; i++) {
+      const a = rand(0, Math.PI * 2), s = rand(speed * 0.3, speed);
+      this.spawn({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, color, size: rand(size * 0.6, size * 1.3), maxLife: rand(maxLife * 0.6, maxLife) });
+    }
+  }
+  trail(x, y, vx, vy, color, size) {
+    if (this.reducedMotion && Math.random() < 0.6) return;
+    this.spawn({ x, y, vx: vx * 0.2 + rand(-18, 18), vy: vy * 0.2 + rand(-18, 18), color, size, maxLife: 0.35, drag: 3.5 });
+  }
+  shockwave(x, y, maxRadius, color, time) {
+    if (this.shockwaves.length >= CONFIG.spawn.maxShockwaves) this.shockwaves.shift();
+    const s = this.swPool.pop() || {};
+    s.x = x; s.y = y; s.r = 12; s.max = maxRadius; s.life = 0; s.maxLife = time; s.color = color;
+    this.shockwaves.push(s);
+  }
+  shake(mag, time) {
+    if (this.reducedMotion) return;
+    const scaled = mag * (0.3 + 0.7 * this.intensity);
+    if (scaled > this.shakeMag) { this.shakeMag = scaled; this.shakeTime = time; }
+  }
+  update(dt) {
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      const p = this.items[i];
+      p.life += dt;
+      if (p.life >= p.maxLife) { this.items.splice(i, 1); this.pool.push(p); continue; }
+      const d = Math.max(0, 1 - p.drag * dt);
+      p.vx *= d; p.vy *= d;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.grow) p.size += p.grow * dt;
+    }
+    for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+      const s = this.shockwaves[i];
+      s.life += dt;
+      if (s.life >= s.maxLife) { this.shockwaves.splice(i, 1); this.swPool.push(s); continue; }
+      const t = s.life / s.maxLife;
+      s.r = 12 + (s.max - 12) * (1 - Math.pow(1 - t, 2.2));
+    }
+    if (this.shakeTime > 0) {
+      this.shakeTime -= dt;
+      if (this.shakeTime <= 0) { this.shakeMag = 0; this.shakeTime = 0; }
+    }
+  }
+  draw(ctx) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < this.items.length; i++) {
+      const p = this.items[i];
+      const a = 1 - p.life / p.maxLife;
+      ctx.globalAlpha = clamp(a, 0, 1) * 0.9;
+      ctx.fillStyle = p.color;
+      if (p.glow && a > 0.35) { ctx.shadowBlur = 10; ctx.shadowColor = p.color; } else { ctx.shadowBlur = 0; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.4, p.size * (0.4 + 0.6 * a)), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    for (let i = 0; i < this.shockwaves.length; i++) {
+      const s = this.shockwaves[i];
+      const a = 1 - s.life / s.maxLife;
+      ctx.globalAlpha = clamp(a, 0, 1) * 0.85;
+      const grad = ctx.createRadialGradient(s.x, s.y, Math.max(0, s.r * 0.55), s.x, s.y, s.r);
+      grad.addColorStop(0, 'rgba(255,255,255,0)');
+      grad.addColorStop(0.75, s.color);
+      grad.addColorStop(1, 'rgba(255,255,255,0.9)');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(2, 12 * a);
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  clear() { this.items.forEach(p => this.pool.push(p)); this.items.length = 0; this.shockwaves.forEach(s => this.swPool.push(s)); this.shockwaves.length = 0; this.shakeMag = 0; }
+}
+/* ------------------------- PROYECTILES (POOLED) ------------------------- */
+class ProjectilePool {
+  constructor() { this.items = []; this.pool = []; this.colorIndex = 0; }
+  spawn(x, y, angle, speed, damage, life, radius, friendly) {
+    if (this.items.length >= (friendly ? CONFIG.spawn.maxProjectiles : CONFIG.spawn.maxEnemyBullets)) {
+      // recicla el más antiguo para no crecer sin límite
+      const old = this.items.shift();
+      this._fill(old, x, y, angle, speed, damage, life, radius, friendly);
+      this.items.push(old);
+      return old;
+    }
+    const p = this.pool.pop() || {};
+    this._fill(p, x, y, angle, speed, damage, life, radius, friendly);
+    this.items.push(p);
+    return p;
+  }
+  _fill(p, x, y, angle, speed, damage, life, radius, friendly) {
+    p.x = x; p.y = y; p.angle = angle;
+    p.vx = Math.cos(angle) * speed; p.vy = Math.sin(angle) * speed;
+    p.damage = damage; p.life = 0; p.maxLife = life; p.radius = radius;
+    p.friendly = friendly; p.dead = false; p.trailT = 0;
+    if (friendly) { this.colorIndex = (this.colorIndex + 1) % CONFIG.colors.plasma.length; p.color = CONFIG.colors.plasma[this.colorIndex]; }
+    else p.color = '#f472b6';
+  }
+  update(dt, W, H) {
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      const p = this.items[i];
+      p.life += dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.life >= p.maxLife || p.dead || p.x < -60 || p.x > W + 60 || p.y < -60 || p.y > H + 60) {
+        this.items.splice(i, 1); this.pool.push(p);
+      }
+    }
+  }
+  draw(ctx, particles) {
+    for (let i = 0; i < this.items.length; i++) {
+      const p = this.items[i];
+      const fade = clamp(1 - p.life / p.maxLife, 0, 1);
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.globalCompositeOperation = 'lighter';
+      // estela corta
+      ctx.strokeStyle = p.color;
+      ctx.globalAlpha = fade * 0.5;
+      ctx.lineWidth = p.radius * 0.9;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-p.radius * 4.2, 0); ctx.lineTo(0, 0); ctx.stroke();
+      // forma de flecha luminosa
+      ctx.globalAlpha = fade;
+      ctx.shadowBlur = 14; ctx.shadowColor = p.color;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.moveTo(p.radius * 1.7, 0);
+      ctx.lineTo(-p.radius * 0.6, -p.radius * 0.95);
+      ctx.lineTo(-p.radius * 0.15, 0);
+      ctx.lineTo(-p.radius * 0.6, p.radius * 0.95);
+      ctx.closePath(); ctx.fill();
+      // núcleo blanco
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.beginPath(); ctx.arc(p.radius * 0.25, 0, p.radius * 0.38, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
+  clear() { this.items.forEach(p => this.pool.push(p)); this.items.length = 0; }
+}
+
+/* ------------------------- ENEMIGOS ------------------------- */
+class Enemy {
+  constructor(game) { this.game = game; this.active = false; }
+  init(type, x, y, levelCfg) {
+    const base = CONFIG.enemies[type];
+    this.type = type;
+    this.behavior = base.behavior;
+    this.radius = base.radius;
+    this.x = x; this.y = y;
+    this.maxHp = Math.max(1, Math.round(base.hp * levelCfg.hpMul));
+    this.hp = this.maxHp;
+    this.baseSpeed = base.speed * levelCfg.speedMul * rand(0.9, 1.12);
+    this.speed = this.baseSpeed;
+    this.scoreValue = base.score;
+    this.damage = base.damage;
+    this.vx = 0; this.vy = 0;
+    this.angle = rand(0, Math.PI * 2);
+    this.wobble = rand(0, Math.PI * 2);
+    this.wobbleSpeed = rand(2.2, 3.6);
+    this.wobbleAmp = rand(0.5, 1.1);
+    this.dashTimer = rand(0.8, 2.2);
+    this.dashBurst = 0;
+    this.fireTimer = rand(1.2, 2.6);
+    this.shieldHp = base.shield || 0;
+    this.maxShield = base.shield || 0;
+    this.shieldFlash = 0;
+    this.hitFlash = 0;
+    this.pushTimer = 0;
+    this.dead = false;
+    this.spawnAnim = 0.35;
+    this.seed = rand(0, 100);
+    this.active = true;
+  }
+  applyDamage(dmg, particles) {
+    if (this.shieldHp > 0) {
+      const absorbed = dmg * 0.65;
+      this.shieldHp -= dmg;
+      this.shieldFlash = 0.25;
+      if (this.shieldHp <= 0) {
+        this.shieldHp = 0;
+        particles.burst(this.x, this.y, 16, '#fbbf24', 260, 3, 0.5);
+        Audio2.play('shieldBreak');
+      }
+      return { dealt: Math.max(0.4, dmg - absorbed), broke: this.shieldHp <= 0 && this.maxShield > 0 };
+    }
+    this.hp -= dmg;
+    this.hitFlash = 0.14;
+    return { dealt: dmg, broke: false };
+  }
+  update(dt, game) {
+    const p = game.player;
+    if (this.spawnAnim > 0) this.spawnAnim -= dt;
+    if (this.hitFlash > 0) this.hitFlash -= dt;
+    if (this.shieldFlash > 0) this.shieldFlash -= dt;
+    this.wobble += this.wobbleSpeed * dt;
+
+    const dx = p.x - this.x, dy = p.y - this.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const nx = dx / d, ny = dy / d;
+    let tx = nx, ty = ny;
+    let speed = this.speed;
+
+    if (this.pushTimer > 0) {
+      // empuje externo (escudo o choque): la IA no lo contradice y la velocidad se amortigua
+      this.pushTimer -= dt;
+      const damp = Math.max(0, 1 - 3.2 * dt);
+      this.vx *= damp; this.vy *= damp;
+    } else {
+      switch (this.behavior) {
+        case 'chase': {
+          tx = nx + Math.cos(this.wobble) * 0.18 * this.wobbleAmp;
+          ty = ny + Math.sin(this.wobble) * 0.18 * this.wobbleAmp;
+          break;
+        }
+        case 'wavy': {
+          const perpX = -ny, perpY = nx;
+          const wave = Math.sin(this.wobble * 1.4) * this.wobbleAmp;
+          tx = nx + perpX * wave; ty = ny + perpY * wave;
+          break;
+        }
+        case 'dash': {
+          this.dashTimer -= dt;
+          if (this.dashTimer <= 0) { this.dashTimer = rand(1.4, 2.6); this.dashBurst = 0.42; }
+          if (this.dashBurst > 0) { this.dashBurst -= dt; speed = this.baseSpeed * 1.85; }
+          break;
+        }
+        case 'ranged': {
+          const desired = 250;
+          if (d > desired + 40) { tx = nx; ty = ny; }
+          else if (d < desired - 40) { tx = -nx; ty = -ny; }
+          else { tx = -ny * 0.9; ty = nx * 0.9; }
+          speed = this.baseSpeed * (d > desired + 40 ? 1 : 0.85);
+          this.fireTimer -= dt;
+          if (this.fireTimer <= 0 && d < 470) {
+            this.fireTimer = rand(1.9, 2.9);
+            const a = Math.atan2(dy, dx);
+            game.enemyBullets.spawn(this.x, this.y, a, CONFIG.enemyBullet.speed, CONFIG.enemyBullet.damage, CONFIG.enemyBullet.life, CONFIG.enemyBullet.radius, false);
+            game.particles.burst(this.x, this.y, 4, '#c084fc', 90, 2, 0.3);
+          }
+          break;
+        }
+        default: break;
+      }
+      const m = Math.hypot(tx, ty) || 1;
+      tx /= m; ty /= m;
+      const accel = 420;
+      this.vx += tx * accel * dt; this.vy += ty * accel * dt;
+      const vm = Math.hypot(this.vx, this.vy);
+      if (vm > speed) { this.vx = this.vx / vm * speed; this.vy = this.vy / vm * speed; }
+    }
+    this.x += this.vx * dt; this.y += this.vy * dt;
+    this.angle = Math.atan2(this.vy, this.vx);
+
+    // separación simple frente a otros enemigos (evita apilamiento)
+    for (let i = 0; i < game.enemies.length; i++) {
+      const o = game.enemies[i];
+      if (o === this || !o.active) continue;
+      const sdx = this.x - o.x, sdy = this.y - o.y;
+      const rr = this.radius + o.radius;
+      const dd2 = sdx * sdx + sdy * sdy;
+      if (dd2 > 0.01 && dd2 < rr * rr) {
+        const dd = Math.sqrt(dd2), push = (rr - dd) / rr * 120 * dt;
+        this.x += sdx / dd * push; this.y += sdy / dd * push;
+      }
+    }
+    const mg = this.game;
+    this.x = clamp(this.x, this.radius, mg.W - this.radius);
+    this.y = clamp(this.y, this.radius, mg.H - this.radius);
+  }
+  draw(ctx) {
+    if (!this.active) return;
+    const scale = this.spawnAnim > 0 ? lerp(1.9, 1, 1 - this.spawnAnim / 0.35) : 1;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.scale(scale, scale);
+    const r = this.radius;
+    if (this.type === 'bacterium' || this.type === 'shielded') this._drawBacillus(ctx, r);
+    else if (this.type === 'bacillusWavy') this._drawWavy(ctx, r);
+    else if (this.type === 'virusFast') this._drawVirus(ctx, r, '#f472b6');
+    else this._drawRanged(ctx, r);
+    if (this.hitFlash > 0) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = clamp(this.hitFlash / 0.14, 0, 1) * 0.8;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.restore();
+    this._drawBars(ctx);
+  }
+  _drawBacillus(ctx, r) {
+    const shielded = this.type === 'shielded';
+    const main = shielded ? '#f59e0b' : '#4ade80';
+    const dark = shielded ? '#92400e' : '#166534';
+    ctx.rotate(this.angle);
+    // pili ondulantes
+    ctx.strokeStyle = shielded ? 'rgba(251,191,36,.7)' : 'rgba(74,222,128,.65)';
+    ctx.lineWidth = 1.6;
+    for (let i = -1; i <= 1; i += 2) {
+      ctx.beginPath();
+      ctx.moveTo(-r * 1.05, i * r * 0.35);
+      ctx.quadraticCurveTo(-r * 1.7, i * r * (0.7 + Math.sin(performance.now() / 160 + this.seed) * 0.3), -r * 2.2, i * r * 0.2);
+      ctx.stroke();
+    }
+    const g = ctx.createLinearGradient(-r, -r, r, r);
+    g.addColorStop(0, main); g.addColorStop(1, dark);
+    ctx.shadowBlur = 16; ctx.shadowColor = main;
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(0, 0, r * 1.25, r * 0.85, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.ellipse(0, 0, r * 1.25, r * 0.85, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,.28)';
+    ctx.beginPath(); ctx.ellipse(-r * 0.3, -r * 0.15, r * 0.34, r * 0.26, 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r * 0.34, r * 0.2, r * 0.26, r * 0.2, -0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.beginPath(); ctx.ellipse(-r * 0.45, -r * 0.42, r * 0.3, r * 0.16, -0.5, 0, Math.PI * 2); ctx.fill();
+  }
+  _drawWavy(ctx, r) {
+    ctx.rotate(this.angle);
+    const g = ctx.createLinearGradient(-r * 1.6, 0, r * 1.6, 0);
+    g.addColorStop(0, '#22d3ee'); g.addColorStop(1, '#0369a1');
+    ctx.shadowBlur = 14; ctx.shadowColor = '#22d3ee';
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(-r * 1.6, -r * 0.6, r * 3.2, r * 1.2, r * 0.6)
+                  : ctx.rect(-r * 1.6, -r * 0.6, r * 3.2, r * 1.2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 1.3;
+    ctx.stroke();
+    // flagelo
+    ctx.strokeStyle = 'rgba(34,211,238,.8)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-r * 1.6, 0);
+    for (let i = 1; i <= 4; i++) ctx.lineTo(-r * 1.6 - i * r * 0.5, Math.sin(this.wobble * 2 + i) * r * 0.5);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.4)';
+    for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.arc(i * r * 0.6, 0, r * 0.16, 0, Math.PI * 2); ctx.fill(); }
+  }
+  _drawVirus(ctx, r, color) {
+    ctx.rotate(this.wobble * 0.4);
+    ctx.shadowBlur = 16; ctx.shadowColor = color;
+    ctx.strokeStyle = color; ctx.lineWidth = 2.2;
+    // espigas de superficie
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      const x1 = Math.cos(a) * r * 0.85, y1 = Math.sin(a) * r * 0.85;
+      const x2 = Math.cos(a) * r * 1.45, y2 = Math.sin(a) * r * 1.45;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x2, y2, r * 0.2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    const g = ctx.createRadialGradient(-r * 0.25, -r * 0.25, r * 0.1, 0, 0, r);
+    g.addColorStop(0, '#fda4af'); g.addColorStop(1, '#9d174d');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    for (let i = 0; i <= 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const x = Math.cos(a) * r * 0.85, y = Math.sin(a) * r * 0.85;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,.3)';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.34, 0, Math.PI * 2); ctx.fill();
+  }
+  _drawRanged(ctx, r) {
+    ctx.rotate(this.wobble * 0.25);
+    const color = '#a78bfa';
+    ctx.shadowBlur = 18; ctx.shadowColor = color;
+    ctx.fillStyle = '#6d28d9';
+    ctx.beginPath();
+    for (let i = 0; i <= 8; i++) {
+      const a = (i / 8) * Math.PI * 2, rad = i % 2 ? r * 0.62 : r;
+      const x = Math.cos(a) * rad, y = Math.sin(a) * rad;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#ede9fe';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2); ctx.fill();
+    // satélites orbitales
+    const t = performance.now() / 700 + this.seed;
+    ctx.fillStyle = '#c4b5fd';
+    for (let i = 0; i < 3; i++) {
+      const a = t + (i / 3) * Math.PI * 2;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * r * 1.25, Math.sin(a) * r * 1.25, r * 0.15, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  _drawBars(ctx) {
+    if (this.hp >= this.maxHp && this.shieldHp <= 0) return;
+    const w = this.radius * 2.2, x = this.x - w / 2, y = this.y - this.radius - 12;
+    ctx.save();
+    ctx.fillStyle = 'rgba(2,6,23,.75)';
+    ctx.fillRect(x - 1, y - 1, w + 2, 5);
+    ctx.fillStyle = '#f43f5e';
+    ctx.fillRect(x, y, w * clamp(this.hp / this.maxHp, 0, 1), 3);
+    if (this.maxShield > 0) {
+      ctx.fillStyle = 'rgba(2,6,23,.75)';
+      ctx.fillRect(x - 1, y - 7, w + 2, 5);
+      ctx.fillStyle = this.shieldHp > 0 ? '#fbbf24' : 'rgba(148,163,184,.35)';
+      ctx.fillRect(x, y - 6, w * clamp(this.shieldHp / this.maxShield, 0, 1), 3);
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------- RECOGIBLES ------------------------- */
+class Pickup {
+  constructor() { this.active = false; }
+  init(x, y, type) {
+    this.x = x; this.y = y; this.type = type; this.life = 0;
+    this.maxLife = CONFIG.pickup.life; this.radius = CONFIG.pickup.radius;
+    this.bob = rand(0, Math.PI * 2); this.active = true;
+  }
+  update(dt) {
+    this.life += dt; this.bob += dt * 3;
+    if (this.life >= this.maxLife) this.active = false;
+  }
+  draw(ctx) {
+    const fade = clamp(1 - this.life / this.maxLife, 0, 1);
+    const yOff = Math.sin(this.bob) * 4;
+    const color = this.type === 'health' ? '#34d399' : (this.type === 'energy' ? '#22d3ee' : '#facc15');
+    ctx.save();
+    ctx.translate(this.x, this.y + yOff);
+    ctx.globalAlpha = fade;
+    ctx.shadowBlur = 18; ctx.shadowColor = color;
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#041016';
+    ctx.font = 'bold 12px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(this.type === 'health' ? '+' : (this.type === 'energy' ? '⚡' : '★'), 0, 0.5);
+    ctx.restore();
+  }
+}
+
+/* ------------------------- JUGADOR: GLÓBULO BLANCO ------------------------- */
+class Player {
+  constructor(game) { this.game = game; this.reset(); }
+  reset() {
+    const g = this.game;
+    this.x = g.W / 2; this.y = g.H / 2;
+    this.vx = 0; this.vy = 0;
+    this.radius = CONFIG.player.radius;
+    this.health = CONFIG.player.maxHealth;
+    this.maxHealth = CONFIG.player.maxHealth;
+    this.fireTimer = 0;
+    this.invuln = 0;
+    this.hitTimer = 0;
+    this.shieldCooldown = 0;
+    this.shieldAnim = 0;
+    this.aimAngle = -Math.PI / 2;
+    this.moveDir = { x: 0, y: -1 };
+    this.spawnAnim = 1;
+    this.hurtFlash = 0;
+    this.membraneT = 0;
+    this.granuleT = 0;
+    this.alive = true;
+  }
+  get maxSpeed() { return CONFIG.player.baseMaxSpeed * g_settings().ctrlSens; }
+  takeDamage(amount) {
+    if (!this.alive || this.invuln > 0 || this.hitTimer > 0) return false;
+    this.health = clamp(this.health - amount, 0, this.maxHealth);
+    this.hitTimer = CONFIG.player.hitIFrames;
+    this.hurtFlash = 0.4;
+    this.game.particles.burst(this.x, this.y, 14, '#f43f5e', 260, 3, 0.55);
+    this.game.particles.shake(9, 0.28);
+    Audio2.play('damage');
+    if (this.health <= 0) this.alive = false;
+    return true;
+  }
+  activateShield(source) {
+    const g = this.game;
+    if (!this.alive || this.shieldCooldown > 0) return false;
+    this.shieldCooldown = CONFIG.shield.cooldown;
+    this.invuln = CONFIG.shield.invulnTime;   // exactamente 3 segundos
+    this.shieldAnim = 1;
+    g.particles.shockwave(this.x, this.y, CONFIG.shield.maxRadius, 'rgba(52,211,153,.95)', CONFIG.shield.expandTime);
+    g.particles.shockwave(this.x, this.y, CONFIG.shield.maxRadius * 0.72, 'rgba(34,211,238,.85)', CONFIG.shield.expandTime * 1.25);
+    g.particles.burst(this.x, this.y, 40, '#34d399', 520, 3.5, 0.8);
+    g.particles.shake(12, 0.35);
+    // efecto único por activación: daño + empuje calculados una sola vez
+    let affected = 0;
+    const maxR2 = CONFIG.shield.maxRadius * CONFIG.shield.maxRadius;
+    for (let i = 0; i < g.enemies.length; i++) {
+      const e = g.enemies[i];
+      if (!e.active) continue;
+      const dx = e.x - this.x, dy = e.y - this.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > maxR2) continue;
+      affected++;
+      const d = Math.sqrt(d2) || 1;
+      const falloff = 1 - clamp(d / CONFIG.shield.maxRadius, 0, 1) * 0.55;
+      const resist = e.maxShield > 0 && e.shieldHp > 0 ? 0.45 : 1;
+      g.damageEnemy(e, CONFIG.shield.damage * falloff * resist);
+      const push = CONFIG.shield.push * falloff * resist;
+      e.vx = dx / d * push; e.vy = dy / d * push;
+      e.pushTimer = 0.4;
+      e.x = clamp(e.x + dx / d * 14 * falloff, e.radius, g.W - e.radius);
+      e.y = clamp(e.y + dy / d * 14 * falloff, e.radius, g.H - e.radius);
+    }
+    Audio2.play('shield');
+    g.ui.banner('ESCUDO DE PULSO INMUNE · ' + (source === 'micro' ? 'SOPLO DETECTADO' : 'CONTROL ALTERNATIVO'), '#34d399');
+    g.stats.shields++;
+    return true;
+  }
+  update(dt, input) {
+    const g = this.game;
+    if (!this.alive) return;
+    this.membraneT += dt * 4;
+    this.granuleT += dt * 1.6;
+    if (this.spawnAnim > 0) this.spawnAnim = Math.max(0, this.spawnAnim - dt * 1.6);
+    if (this.hitTimer > 0) this.hitTimer -= dt;
+    if (this.invuln > 0) this.invuln = Math.max(0, this.invuln - dt);
+    if (this.shieldCooldown > 0) this.shieldCooldown = Math.max(0, this.shieldCooldown - dt);
+    if (this.hurtFlash > 0) this.hurtFlash -= dt;
+    if (this.shieldAnim > 0 && this.invuln <= 0) this.shieldAnim = Math.max(0, this.shieldAnim - dt * 0.7);
+
+    const ax = input.axis();
+    const maxSpeed = this.maxSpeed;
+    if (ax.x !== 0 || ax.y !== 0) {
+      this.vx += ax.x * CONFIG.player.accel * dt;
+      this.vy += ax.y * CONFIG.player.accel * dt;
+      this.moveDir.x = ax.x; this.moveDir.y = ax.y;
+      const m = Math.hypot(this.moveDir.x, this.moveDir.y) || 1;
+      this.moveDir.x /= m; this.moveDir.y /= m;
+      // estela de impulso
+      if (Math.random() < 0.55 * (0.4 + 0.6 * g.particles.intensity)) {
+        g.particles.trail(this.x - this.moveDir.x * this.radius, this.y - this.moveDir.y * this.radius,
+          -this.vx * 0.25, -this.vy * 0.25, '#67e8f9', rand(1.5, 3));
+      }
+    } else {
+      const damp = Math.max(0, 1 - CONFIG.player.friction * dt);
+      this.vx *= damp; this.vy *= damp;
+    }
+    // protección frente a velocidades excesivas
+    const sp = Math.hypot(this.vx, this.vy);
+    if (sp > maxSpeed) { this.vx = this.vx / sp * maxSpeed; this.vy = this.vy / sp * maxSpeed; }
+    this.x += this.vx * dt; this.y += this.vy * dt;
+
+    // límites del escenario
+    if (this.x < this.radius) { this.x = this.radius; this.vx = Math.max(0, this.vx * -0.25); }
+    if (this.x > g.W - this.radius) { this.x = g.W - this.radius; this.vx = Math.min(0, this.vx * -0.25); }
+    if (this.y < this.radius) { this.y = this.radius; this.vy = Math.max(0, this.vy * -0.25); }
+    if (this.y > g.H - this.radius) { this.y = g.H - this.radius; this.vy = Math.min(0, this.vy * -0.25); }
+
+    // apuntado: ratón si está dentro del canvas; si no, dirección de movimiento
+    const inp = g.input;
+    if (g.controlMode === 'touch') {
+      const target = g.nearestEnemy(this.x, this.y, 620);
+      if (target) this.aimAngle = Math.atan2(target.y - this.y, target.x - this.x);
+      else if (ax.x !== 0 || ax.y !== 0) this.aimAngle = Math.atan2(this.moveDir.y, this.moveDir.x);
+    } else if (inp.mouse.inside && performance.now() - inp.mouse.movedAt < 4000) {
+      this.aimAngle = Math.atan2(inp.mouse.y - this.y, inp.mouse.x - this.x);
+    } else if (ax.x !== 0 || ax.y !== 0) {
+      this.aimAngle = Math.atan2(this.moveDir.y, this.moveDir.x);
+    }
+
+    // disparo con cadencia
+    if (this.fireTimer > 0) this.fireTimer -= dt;
+    if (input.firing && this.fireTimer <= 0) {
+      this.fireTimer = CONFIG.player.fireCooldown;
+      const a = this.aimAngle;
+      const sx = this.x + Math.cos(a) * (this.radius + 6);
+      const sy = this.y + Math.sin(a) * (this.radius + 6);
+      g.projectiles.spawn(sx, sy, a + rand(-0.035, 0.035), CONFIG.player.projectileSpeed,
+        CONFIG.player.projectileDamage, CONFIG.player.projectileLife, CONFIG.player.projectileRadius, true);
+      g.particles.burst(sx, sy, 3, '#e0f2fe', 130, 2, 0.22);
+      this.vx -= Math.cos(a) * 16; this.vy -= Math.sin(a) * 16;   // retroceso sutil
+      Audio2.play('shoot');
+    }
+  }
+  draw(ctx) {
+    if (!this.alive) return;
+    const r = this.radius;
+    const spawnScale = this.spawnAnim > 0 ? lerp(0.2, 1, 1 - this.spawnAnim) : 1;
+    const breathe = 1 + Math.sin(this.membraneT) * 0.035;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    // aura de energía
+    ctx.globalCompositeOperation = 'lighter';
+    const aura = ctx.createRadialGradient(0, 0, r * 0.4, 0, 0, r * 2.4);
+    aura.addColorStop(0, 'rgba(34,211,238,.30)');
+    aura.addColorStop(1, 'rgba(34,211,238,0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath(); ctx.arc(0, 0, r * 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+
+    ctx.scale(spawnScale * breathe, spawnScale * breathe);
+
+    // membrana ondulante
+    const N = 26;
+    ctx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      const wob = 1 + Math.sin(a * 3 + this.membraneT) * 0.06 + Math.cos(a * 5 - this.membraneT * 0.8) * 0.04;
+      const x = Math.cos(a) * r * wob, y = Math.sin(a) * r * wob;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    const g1 = ctx.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.15, 0, 0, r * 1.15);
+    g1.addColorStop(0, '#f0fdff');
+    g1.addColorStop(0.55, '#a5e8f7');
+    g1.addColorStop(1, '#2596be');
+    ctx.fillStyle = g1;
+    ctx.shadowBlur = 26; ctx.shadowColor = 'rgba(34,211,238,.9)';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(224,247,255,.95)'; ctx.lineWidth = 2.2;
+    ctx.stroke();
+
+    // núcleo trilobulado (leucocito)
+    ctx.fillStyle = 'rgba(88,28,135,.92)';
+    ctx.strokeStyle = 'rgba(196,181,253,.85)'; ctx.lineWidth = 1.4;
+    const lobes = [[-r * 0.16, -r * 0.05, r * 0.44], [r * 0.22, r * 0.12, r * 0.36], [r * 0.02, r * 0.3, r * 0.27]];
+    ctx.beginPath();
+    for (const L of lobes) ctx.moveTo(L[0] + L[2], L[1]), ctx.arc(L[0], L[1], L[2], 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // gránulos citoplasmáticos
+    ctx.fillStyle = 'rgba(14,116,144,.55)';
+    for (let i = 0; i < 9; i++) {
+      const a = this.granuleT * 0.6 + (i / 9) * Math.PI * 2;
+      const rr = r * (0.55 + (i % 3) * 0.14);
+      ctx.beginPath(); ctx.arc(Math.cos(a) * rr, Math.sin(a) * rr, r * 0.08, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // destello de daño
+    if (this.hurtFlash > 0) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = clamp(this.hurtFlash / 0.4, 0, 1) * 0.7;
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath(); ctx.arc(0, 0, r * 1.15, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // escudo / invulnerabilidad (exactamente 3 s)
+    if (this.invuln > 0) {
+      const t = this.invuln / CONFIG.shield.invulnTime;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgba(52,211,153,.95)';
+      ctx.lineWidth = 2.5 + Math.sin(performance.now() / 90) * 1;
+      ctx.shadowBlur = 22; ctx.shadowColor = '#34d399';
+      ctx.beginPath(); ctx.arc(0, 0, r * 1.6 + Math.sin(performance.now() / 110) * 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(52,211,153,.10)';
+      ctx.beginPath(); ctx.arc(0, 0, r * 1.6, 0, Math.PI * 2); ctx.fill();
+      // anillo hexagonal rotatorio
+      ctx.strokeStyle = 'rgba(167,139,250,.8)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (let i = 0; i <= 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + performance.now() / 500;
+        const x = Math.cos(a) * r * 1.95, y = Math.sin(a) * r * 1.95;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      // indicador de invulnerabilidad restante
+      ctx.strokeStyle = 'rgba(255,255,255,.85)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 2.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * t);
+      ctx.stroke();
+    }
+
+    // punta de dirección / disparo
+    ctx.rotate(this.aimAngle);
+    ctx.fillStyle = 'rgba(224,247,255,.9)';
+    ctx.beginPath();
+    ctx.moveTo(r * 1.35, 0); ctx.lineTo(r * 0.95, -r * 0.28); ctx.lineTo(r * 0.95, r * 0.28);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    // línea de apuntado coherente con la trayectoria real
+    if (this.game.controlMode !== 'touch') {
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = '#67e8f9';
+      ctx.setLineDash([4, 10]);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(this.x + Math.cos(this.aimAngle) * (r + 10), this.y + Math.sin(this.aimAngle) * (r + 10));
+      ctx.lineTo(this.x + Math.cos(this.aimAngle) * 150, this.y + Math.sin(this.aimAngle) * 150);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // retícula
+      const cx = this.x + Math.cos(this.aimAngle) * 150, cy = this.y + Math.sin(this.aimAngle) * 150;
+      ctx.strokeStyle = 'rgba(103,232,249,.75)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx - 11, cy); ctx.lineTo(cx - 4, cy); ctx.moveTo(cx + 4, cy); ctx.lineTo(cx + 11, cy); ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+// lectura puntual de ajustes activos (evita acoplamiento con la interfaz)
+let g_settings = () => ({ ctrlSens: 1 });
+/* ------------------------- CONTENIDO EDUCATIVO ------------------------- */
+const SCIENCE = {
+  levelFacts: [
+    {
+      chip: 'Transmisión científica · Nivel 1', icon: '🩸',
+      title: 'CAPILARES COMPLETADOS',
+      fact: 'Los glóbulos blancos pueden abandonar algunos vasos sanguíneos mediante un proceso llamado diapédesis (o extravasación), que les permite atravesar el endotelio y llegar a los tejidos donde se necesitan defensas.',
+      relation: 'En el juego esta capacidad se representa como libertad de movimiento dentro del escenario: en la realidad, el leucocito se deforma para salir del capilar hacia el intersticio.'
+    },
+    {
+      chip: 'Transmisión científica · Nivel 2', icon: '🔬',
+      title: 'ARTERIA COMPLETADA',
+      fact: 'Los neutrófilos son uno de los tipos de glóbulos blancos más abundantes en la sangre y participan en la respuesta inmunitaria innata, especialmente frente a determinadas infecciones bacterianas. Son células fagocíticas: ingieren microorganismos y restos celulares.',
+      relation: 'Las bacterias verdes del juego representan de forma estilizada esos estímulos infecciosos; en la vida real, el neutrófilo las fagocita, no las dispara con energía.'
+    },
+    {
+      chip: 'Transmisión científica · Nivel 3', icon: '🛡️',
+      title: 'INFECCIÓN CAÓTICA — ÉLITE COMPLETADA',
+      fact: 'Los linfocitos B pueden diferenciarse en células plasmáticas que producen anticuerpos. Estos reconocen antígenos específicos y ayudan a que el organismo responda frente a determinados agentes infecciosos.',
+      relation: 'El escudo de pulso inmune del juego es una metáfora lúdica: los anticuerpos reales no generan ondas expansivas, sino señales moleculares específicas.'
+    },
+    {
+      chip: 'Transmisión científica · Modo Élite', icon: '⚡',
+      title: 'SUPERVIVENCIA DE ÉLITE DESBLOQUEADA',
+      fact: 'Tras una infección, algunas células de memoria (linfocitos B y T de memoria) permanecen en el organismo durante años o décadas y permiten una respuesta secundaria más rápida y potente si el mismo antígeno vuelve a aparecer. Ese es el principio de las vacunas.',
+      relation: 'Aquí no hay vacuna: solo resistencia. Cada oleada que sobrevivas equivale, en términos lúdicos, a una respuesta secundaria más eficiente.'
+    }
+  ],
+  encyclopedia: [
+    { icon: '⚪', title: 'GLÓBULOS BLANCOS (LEUCOCITOS)', body: 'Son las células defensas de la sangre. No forman un grupo uniforme: incluyen neutrófilos, linfocitos B y T, monocitos (que se convierten en macrófagos), eosinófilos y basófilos. Participan en la defensa frente a infecciones, en la eliminación de células dañadas y en la regulación de la respuesta inmunitaria. Ningún glóbulo blanco dispara proyectiles: ese es un recurso del juego.' },
+    { icon: '🛡️', title: 'NEUTRÓFILOS Y FAGOCITOSIS', body: 'El neutrófilo es el leucocito más numeroso y suele ser el primero en llegar a un foco infeccioso. Se desplaza por quimiotaxis (sigue gradientes de sustancias químicas) y fagocita: envuelve al microorganismo en una vesícula y lo degrada con enzimas y especies reactivas del oxígeno. Es un componente clave de la inmunidad innata.' },
+    { icon: '🧬', title: 'LINFOCITOS B Y ANTICUERPOS', body: 'Los linfocitos B reconocen antígenos concretos. Cuando se activan, se transforman en células plasmáticas: fábricas de anticuerpos. Los anticuerpos (inmunoglobulinas) se unen al antígeno, lo neutralizan y marcan al patógeno para que otras células lo eliminen. No todos los glóbulos blancos producen anticuerpos: solo esta línea diferenciada.' },
+    { icon: '🎯', title: 'LINFOCITOS T Y RESPUESTA ADAPTATIVA', body: 'Los linfocitos T cumplen funciones distintas: los helper (CD4+) coordinan la respuesta liberando citocinas; los citotóxicos (CD8+) destruyen células del propio organismo infectadas o alteradas (por ejemplo, células con virus intracelulares o tumorales). Junto con los linfocitos B conforman la inmunidad adaptativa, específica y con memoria.' },
+    { icon: '🦠', title: 'BACTERIAS: CELULARES Y AUTOdependientes', body: 'Las bacterias son organismos procariotas: tienen membrana, citoplasma, ribosomas y material genético (a menudo en un nucleoide), pero no núcleo delimitado por membrana. Muchas son inofensivas e incluso beneficiosas (por ejemplo, la microbiota intestinal); solo algunas son patógenas. Pueden reproducirse fuera de las células del hospedero, por eso los antibióticos son eficaces frente a ellas.' },
+    { icon: '💉', title: 'VIRUS: NO SON CÉLULAS', body: 'Los virus no son células: son material genético (ADN o ARN) envuelto en proteínas, y algunos añaden una membrana lipídica. No pueden replicarse por sí solos: necesitan el maquinaria de una célula hospedero. Por eso los antibióticos no actúan sobre ellos (se usan antivirales). Existen virus que infectan bacterias (bacteriófagos) y muchos que no causan enfermedad en humanos.' },
+    { icon: '🔴', title: 'ERITROCITOS (GLÓBULOS ROJOS)', body: 'Los eritrocitos transportan oxígeno gracias a la hemoglobina y colaboran en el transporte de parte del dióxido de carbono. En humanos maduros carecen de núcleo y de mitocondrias, lo que maximiza el espacio para la hemoglobina. NO son glóbulos blancos ni participan directamente en la defensa inmunitaria.' },
+    { icon: '🩹', title: 'PLAQUETAS (TROMBOCITOS)', body: 'Las plaquetas son fragmentos celulares derivados de los megacariocitos de la médula ósea. Su función principal es la hemostasia: se adhieren a las lesiones vasculares, se activan y forman el coágulo para detener el sangrado. No son glóbulos blancos ni glóbulos rojos.' },
+    { icon: '❤️', title: 'SISTEMA CIRCULATORIO', body: 'Está formado por corazón, arterias, venas y capilares. El corazón impulsa la sangre: sale por las arterias (alta presión, sangre oxigenada salvo en la arteria pulmonar), llega a los capilares —donde ocurre el intercambio de gases y nutrientes— y regresa por las venas. La sangre transporta oxígeno, nutrientes, hormonas, desechos y células inmunitarias.' },
+    { icon: '🧫', title: 'INMUNIDAD INNATA VS. ADAPTATIVA', body: 'La innata es rápida, inespecífica y no genera memoria: barreras (piel, mucosas), fagocitosis, inflamación y proteínas como el complemento. La adaptativa es más lenta la primera vez, es específica de cada antígeno y genera memoria inmunológica; por eso una segunda exposición provoca una respuesta más rápida y fuerte.' },
+    { icon: '🔑', title: 'ANTÍGENOS Y ANTICUERPOS', body: 'Un antígeno es una molécula (o estructura) capaz de ser reconocida por el sistema inmunitario, típicamente proteínas o polisacáridos de la superficie de un patógeno. El anticuerpo es la proteína en forma de Y producida por las células plasmáticas que se une de forma específica a ese antígeno. El conjunto antígeno-anticuerpo facilita la neutralización y la eliminación del agente.' },
+    { icon: '⚖️', title: 'MICROORGANISMOS Y SALUD', body: 'No todos los microorganismos causan enfermedad. Convivimos con bacterias, hongos y virus que forman parte de nuestra microbiota y cumplen funciones útiles, como ayudar a la digestión o competir con patógenos. El concepto de «germen malo» es una simplificación: la enfermedad aparece cuando hay un desequilibrio, una infección oportunista o una respuesta inmunitaria descontrolada.' },
+    { icon: '🎮', title: 'QUÉ ES FICTICIO EN ESTE JUEGO', body: 'Los proyectiles de plasma, el escudo de pulso inmune, las ondas expansivas, las explosiones y los «enemigos con escudo energético» son mecánicas de diseño pensadas para entretener y practicar conceptos. En la vida real la defensa ocurre mediante fagocitosis, citocinas, anticuerpos, células asesinas naturales y cooperación celular, no mediante combate a distancia con energía.' }
+  ],
+  questions: [
+    {
+      q: '¿Qué células pueden diferenciarse en células plasmáticas que producen anticuerpos específicos?',
+      options: ['Linfocitos B.', 'Eritrocitos.', 'Plaquetas.', 'Células musculares.'],
+      correct: 0,
+      ok: 'Correcto. Los linfocitos B, al activarse frente a un antígeno, se diferencian en células plasmáticas que secretan anticuerpos específicos. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era A: Linfocitos B. Los eritrocitos transportan oxígeno y las plaquetas participan en la coagulación; ninguna produce anticuerpos.'
+    },
+    {
+      q: '¿Cuál es la función principal de los eritrocitos en la sangre?',
+      options: ['Producir anticuerpos.', 'Transportar oxígeno mediante la hemoglobina.', 'Coagular la sangre.', 'Destruir bacterias por fagocitosis.'],
+      correct: 1,
+      ok: 'Exacto. Los eritrocitos transportan oxígeno —y parte del dióxido de carbono— gracias a la hemoglobina. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era B: transportar oxígeno mediante la hemoglobina. Producir anticuerpos corresponde a células plasmáticas y coagular corresponde a las plaquetas.'
+    },
+    {
+      q: '¿Qué proceso permite a los glóbulos blancos salir de los vasos sanguíneos para llegar a un tejido infectado?',
+      options: ['Diapédesis (extravasación).', 'Fotosíntesis.', 'Osmosis inversa.', 'Respiración anaeróbica.'],
+      correct: 0,
+      ok: 'Muy bien. La diapédesis es el proceso por el cual los leucocitos atraviesan la pared endotelial del vaso. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era A: diapédesis. Es el mecanismo por el que los glóbulos blancos atraviesan el endotelio para alcanzar los tejidos.'
+    },
+    {
+      q: '¿Cuál de las siguientes afirmaciones sobre los virus es correcta?',
+      options: ['Son células completas con núcleo.', 'Pueden replicarse solos fuera de una célula.', 'No son células y necesitan el maquinaria de una célula hospedero para replicarse.', 'Son eliminados eficazmente por los antibióticos.'],
+      correct: 2,
+      ok: 'Correcto. Los virus no son células y obligan a la célula hospedero a producir copias de ellos; por eso los antibióticos no sirven frente a ellos. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era C: los virus no son células y necesitan replicarse dentro de una célula hospedero. Los antibióticos actúan sobre bacterias, no sobre virus.'
+    },
+    {
+      q: '¿Qué componentes sanguíneos participan principalmente en la coagulación?',
+      options: ['Los neutrófilos.', 'Las plaquetas (trombocitos).', 'Los linfocitos T.', 'Los eritrocitos.'],
+      correct: 1,
+      ok: 'Eso es. Las plaquetas se adhieren a la lesión y forman el coágulo que detiene el sangrado. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era B: las plaquetas. Los neutrófilos y linfocitos participan en la defensa inmunitaria, no en la coagulación.'
+    },
+    {
+      q: '¿Qué tipo de glóbulo blanco fagocita de forma abundante durante muchas infecciones bacterianas?',
+      options: ['Los neutrófilos.', 'Los eritrocitos.', 'Las plaquetas.', 'Los megacariocitos.'],
+      correct: 0,
+      ok: '¡Correcto! Los neutrófilos son fagocitocitos de la inmunidad innata y suelen ser los primeros en llegar al foco infeccioso. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era A: los neutrófilos. Son células fagocíticas de la respuesta inmunitaria innata.'
+    },
+    {
+      q: '¿En qué se diferencia la inmunidad adaptativa de la inmunidad innata?',
+      options: ['La adaptiva es más lenta la primera vez, específica y genera memoria inmunológica.', 'La adaptiva actúa en segundos y no recuerda al patógeno.', 'La innata solo funciona en la piel.', 'No existen diferencias funcionales.'],
+      correct: 0,
+      ok: 'Perfecto. La adaptativa es específica, más lenta en la primoinfección y deja memoria celular y humoral. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era A: la inmunidad adaptativa es específica y genera memoria inmunológica, lo que permite una respuesta secundaria más rápida.'
+    },
+    {
+      q: 'Sobre los linfocitos T, ¿cuál de estas afirmaciones es correcta?',
+      options: ['Producen hemoglobina.', 'Coordinan la respuesta o destruyen células infectadas del propio organismo.', 'Forman parte de los eritrocitos.', 'Secretan moco en las vías respiratorias.'],
+      correct: 1,
+      ok: '¡Exacto! Los linfocitos T helper (CD4+) coordinan la respuesta con citocinas y los citotóxicos (CD8+) eliminan células infectadas o alteradas. La salud se restaura al 50 %.',
+      bad: 'La respuesta correcta era B: los linfocitos T coordinan la respuesta inmunitaria (helper) o destruyen células infectadas del organismo (citotóxicos).'
+    }
+  ]
+};
+
+/* ------------------------- GESTOR DE PREGUNTAS / REANIMACIÓN ------------------------- */
+class QuestionManager {
+  constructor() { this.usedIndices = []; this.current = null; }
+  next() {
+    if (this.usedIndices.length >= SCIENCE.questions.length) this.usedIndices = [];
+    let idx;
+    do { idx = randInt(0, SCIENCE.questions.length - 1); } while (this.usedIndices.includes(idx));
+    this.usedIndices.push(idx);
+    this.current = SCIENCE.questions[idx];
+    this.current.index = idx;
+    return this.current;
+  }
+}
+
+/* ------------------------- RANKING LOCAL ------------------------- */
+const RANK_KEY = 'cellularDashRankingV1';
+const SETTINGS_KEY = 'cellularDashSettingsV1';
+class LeaderboardManager {
+  constructor() { this.entries = this.load(); }
+  load() {
+    const raw = Storage.get(RANK_KEY, []);
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(e => e && typeof e === 'object'
+      && typeof e.alias === 'string' && typeof e.score === 'number' && isFinite(e.score))
+      .map(e => ({
+        alias: e.alias.slice(0, 16),
+        score: Math.max(0, Math.floor(e.score)),
+        time: Math.max(0, Number(e.time) || 0),
+        level: Math.max(1, Math.floor(Number(e.level) || 1)),
+        date: typeof e.date === 'string' ? e.date : ''
+      }))
+      .sort(this.compare)
+      .slice(0, 5);
+  }
+  compare(a, b) {
+    if (b.score !== a.score) return b.score - a.score;   // criterio principal
+    return b.time - a.time;                              // desempate: mayor supervivencia
+  }
+  add(entry) {
+    this.entries.push(entry);
+    this.entries.sort(this.compare);
+    this.entries = this.entries.slice(0, 5);
+    return Storage.set(RANK_KEY, this.entries);
+  }
+  top() { return this.entries.slice(0, 5); }
+  best() { return this.entries.length ? this.entries[0].score : 0; }
+  static sanitizeAlias(s) {
+    return String(s || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
+  }
+}
+
+/* ------------------------- NIVELES (AVANCE POR ENEMIGOS ELIMINADOS) ------------------------- */
+class LevelManager {
+  constructor() {
+    this.index = 0; this.elapsed = 0;
+    this.killsThisLevel = 0;
+    this.enemiesSpawnedThisLevel = 0;
+    this.milestones = [false, false, false, false];
+  }
+  reset() {
+    this.elapsed = 0; this.index = 0;
+    this.killsThisLevel = 0;
+    this.enemiesSpawnedThisLevel = 0;
+    this.milestones = [false, false, false, false];
+  }
+  update(dt) { this.elapsed += dt; }
+  get config() { return CONFIG.levels[this.index]; }
+  get isFinalLevel() { return this.index >= CONFIG.levels.length - 1; }
+  /** Enemigos que faltan por eliminar en el nivel actual (Infinity en Modo Élite). */
+  get killsRequired() { return this.config.killsRequired; }
+  get killsLeft() {
+    return this.isFinalLevel ? Infinity : Math.max(0, this.killsRequired - this.killsThisLevel);
+  }
+  get progress() {
+    if (this.isFinalLevel) return 1;
+    return clamp(this.killsThisLevel / this.killsRequired, 0, 1);
+  }
+  /** Registra una baja en el nivel actual. Devuelve true si se completó el nivel. */
+  registerKill() {
+    if (this.isFinalLevel) return false;
+    this.killsThisLevel++;
+    return this.killsThisLevel >= this.killsRequired;
+  }
+  /** Avanza al siguiente nivel. Devuelve el índice del nivel completado, o -1 si ya era el final. */
+  advance() {
+    if (this.isFinalLevel) return -1;
+    const done = this.index;
+    this.milestones[done] = true;
+    this.index++;
+    this.killsThisLevel = 0;
+    this.enemiesSpawnedThisLevel = 0;
+    return done;
+  }
+  get speedLabel() {
+    const m = this.config.speedMul;
+    const word = m <= 1 ? 'MEDIA' : (m <= 1.3 ? 'ALTA' : (m <= 1.6 ? 'MUY ALTA' : 'EXTREMA'));
+    return word + ' ×' + m.toFixed(2);
+  }
+}
+
+/* ------------------------- GESTIÓN DE INTERFAZ ------------------------- */
+const $ = id => document.getElementById(id);
+const ENCY_KEY = 'cellularDashEncyclopediaRendered';
+
+class UIManager {
+  constructor() {
+    this.screens = ['screen-menu', 'screen-briefing', 'screen-stage', 'screen-pause', 'screen-levelup', 'screen-quiz', 'screen-gameover'];
+    this.activeModal = null;
+    this.lastHp = 1;
+    this._bannerTimer = null;
+  }
+  show(id) {
+    this.screens.forEach(s => {
+      const el = $(s);
+      if (!el) return;
+      // el escenario es la capa base permanente (muestra el fondo circulatorio animado)
+      if (s === 'screen-stage') el.classList.add('active');
+      else el.classList.toggle('active', s === id);
+    });
+    // el HUD y los controles táctiles solo se muestran durante la misión
+    const hud = $('hud');
+    if (hud) hud.style.display = (id === 'screen-stage') ? 'block' : 'none';
+    const tl = $('touchLayer');
+    if (tl) tl.style.display = (id === 'screen-stage') ? '' : 'none';
+  }
+  /**
+   * Medidor en vivo del micrófono en la pantalla de briefing.
+   * Permite verificar ANTES de jugar si el soplo realmente se capta y a qué
+   * nivel queda el umbral. Se alimenta del RMS real, nunca de una simulación.
+   */
+  updateLiveMic(mic) {
+    const bar = $('liveMicBar'), mark = $('liveMicMark'),
+          state = $('liveMicState'), th = $('liveMicTh');
+    if (!bar) return;
+    const on = mic && (mic.state === 'active' || mic.state === 'calibrating');
+    if (!on) {
+      bar.style.width = '0%';
+      bar.style.backgroundColor = '#22d3ee';
+      mark.style.left = '30%';
+      state.textContent = mic && mic.state === 'calibrating' ? 'Calibrando…' : 'Inactivo';
+      state.style.color = '#94a3b8';
+      th.textContent = 'Umbral: —';
+      return;
+    }
+    if (mic.ctxSuspended) {
+      state.textContent = 'Reanudando audio…';
+      state.style.color = '#facc15';
+      th.textContent = 'Contexto de audio suspendido';
+      return;
+    }
+    const lvl = mic.level;
+    const thr = mic.thresholdNorm;
+    bar.style.width = (lvl * 100).toFixed(0) + '%';
+    const over = mic.rawRms > 0 && lvl > thr && mic.state === 'active';
+    bar.style.backgroundColor = over ? '#34d399' : '#22d3ee';
+    bar.style.boxShadow = over ? '0 0 12px rgba(52,211,153,.85)' : 'none';
+    mark.style.left = (thr * 100).toFixed(1) + '%';
+    if (mic.state === 'calibrating') {
+      state.textContent = 'Calibrando… (silencio)';
+      state.style.color = '#22d3ee';
+      th.textContent = 'Estableciendo línea base';
+    } else {
+      state.textContent = over ? '✓ SOPLO DETECTADO' : 'Sopla o grita para probar';
+      state.style.color = over ? '#34d399' : '#94a3b8';
+      th.textContent = 'Umbral ' + (thr * 100).toFixed(0) + '% · RMS ' + mic.rawRms.toFixed(3);
+    }
+  }
+  toast(msg, color, ms) {
+    const root = $('toastRoot');
+    if (!root) return;
+    const el = document.createElement('div');
+    el.className = 'panel rounded-lg px-3 py-2 text-xs sm:text-sm text-center fade-in';
+    el.style.borderColor = (color || '#22d3ee') + '99';
+    el.style.boxShadow = '0 0 18px ' + (color || '#22d3ee') + '44';
+    el.textContent = msg;
+    root.appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 420); }, ms || 2600);
+  }
+  banner(text, color) {
+    const b = $('hudBanner'), t = $('hudBannerText');
+    if (!b || !t) return;
+    t.textContent = text;
+    t.style.color = color || '#ffffff';
+    b.style.opacity = '1';
+    if (this._bannerTimer) clearTimeout(this._bannerTimer);
+    this._bannerTimer = setTimeout(() => { b.style.opacity = '0'; }, 1800);
+  }
+  openModal(id) {
+    this.activeModal = id;
+    $('modalRoot').classList.add('active');
+    document.querySelectorAll('.modal-box').forEach(m => m.classList.toggle('hidden', m.id !== id));
+  }
+  closeModal() {
+    this.activeModal = null;
+    $('modalRoot').classList.remove('active');
+    document.querySelectorAll('.modal-box').forEach(m => m.classList.add('hidden'));
+  }
+  buildEncyclopedia() {
+    const grid = $('encyclopediaGrid');
+    if (!grid || grid.childElementCount) return;
+    grid.innerHTML = SCIENCE.encyclopedia.map(e => `
+      <article class="rounded-xl border border-emerald-400/25 bg-slate-900/50 p-3">
+        <h3 class="font-display text-[11px] tracking-[.16em] text-emerald-300">${e.icon} ${e.title}</h3>
+        <p class="mt-1.5 text-xs leading-relaxed text-cyan-50/85">${e.body}</p>
+      </article>`).join('');
+  }
+  renderRanking() {
+    const list = window.game.leaderboard.top();
+    const body = $('rankingBody'), table = $('rankingTable'), empty = $('rankingEmpty');
+    if (!body) return;
+    if (!list.length) {
+      body.innerHTML = '';
+      table.classList.add('hidden'); empty.classList.remove('hidden');
+      return;
+    }
+    table.classList.remove('hidden'); empty.classList.add('hidden');
+    const medals = ['🥇', '🥈', '🥉', '4°', '5°'];
+    body.innerHTML = list.map((e, i) => `
+      <tr class="border-b border-slate-700/50 ${i === 0 ? 'text-yellow-300' : ''}">
+        <td class="py-2 pr-2 font-display">${medals[i]}</td>
+        <td class="py-2 pr-2 font-semibold">${escapeHtml(e.alias)}</td>
+        <td class="py-2 pr-2 font-display font-bold">${e.score.toLocaleString('es')}</td>
+        <td class="py-2 pr-2">${fmtTime(e.time)}</td>
+        <td class="py-2 pr-2">${levelNameShort(e.level)}</td>
+        <td class="py-2 text-slate-400">${e.date || '—'}</td>
+      </tr>`).join('');
+  }
+  updateHUD(game) {
+    const p = game.player;
+    const pct = clamp(p.health / p.maxHealth, 0, 1);
+    const bar = $('hudHpBar');
+    if (Math.abs(pct - this.lastHp) > 0.001) {
+      bar.style.width = (pct * 100).toFixed(1) + '%';
+      bar.style.backgroundColor = pct > 0.55 ? '#34d399' : (pct > 0.25 ? '#facc15' : '#f43f5e');
+      this.lastHp = pct;
+    }
+    $('hudHpText').textContent = Math.ceil(p.health) + ' / ' + p.maxHealth;
+    $('hudScore').textContent = Math.floor(game.stats.score).toLocaleString('es');
+    $('hudTime').textContent = fmtTime(game.levels.elapsed);
+    $('hudLevelName').textContent = game.levels.config.name;
+    // descripción + contador de bajas del nivel (la clave del avance)
+    const lv = game.levels;
+    const killInfo = lv.isFinalLevel
+      ? 'Supervivencia libre · enemigos derrotados: ' + lv.killsThisLevel
+      : 'Enemigos eliminados: ' + lv.killsThisLevel + ' / ' + lv.killsRequired + ' · faltan ' + lv.killsLeft;
+    $('hudLevelDesc').textContent = lv.isFinalLevel ? lv.config.desc : killInfo;
+    $('hudSpeedTag').textContent = lv.speedLabel;
+    const count = game.enemies.length;
+    $('hudEnemyCount').textContent = count;
+    const ratio = count / game.levels.config.maxEnemies;
+    const threat = $('hudThreat');
+    threat.textContent = ratio > 0.75 ? '⚠ Amenaza elevada' : (ratio > 0.45 ? 'Presión creciente' : 'Presión controlada');
+    threat.style.color = ratio > 0.75 ? '#fca5a5' : (ratio > 0.45 ? '#fde68a' : '#cbd5e1');
+
+    // micrófono y escudo
+    const mic = game.mic, micState = $('hudMicState'), micBar = $('hudMicBar'), blowEl = $('hudBlow'), shieldEl = $('hudShield');
+    if (!mic || mic.state === 'off') {
+      micState.textContent = 'Micrófono desactivado';
+      micState.style.color = '#94a3b8';
+      micBar.style.width = '0%';
+      blowEl.textContent = 'Soplo: no disponible';
+      blowEl.style.color = '#94a3b8';
+    } else if (mic.state === 'requesting') {
+      micState.textContent = 'Esperando permiso…'; micState.style.color = '#facc15'; micBar.style.width = '0%';
+    } else if (mic.state === 'calibrating') {
+      micState.textContent = 'Calibrando…'; micState.style.color = '#22d3ee';
+      micBar.style.width = (mic.level * 100).toFixed(0) + '%';
+      blowEl.textContent = 'Permanece en silencio';
+    } else if (mic.state === 'error') {
+      micState.textContent = 'Error de micrófono'; micState.style.color = '#f87171'; micBar.style.width = '0%';
+      blowEl.textContent = 'Usa Shift para el escudo';
+    } else {
+      micState.textContent = 'Micrófono activo'; micState.style.color = '#34d399';
+      micBar.style.width = (mic.level * 100).toFixed(0) + '%';
+      micBar.style.backgroundColor = mic.level > mic.threshold ? '#facc15' : '#22d3ee';
+      blowEl.textContent = mic.blowActive ? '💨 Soplo detectado' : 'Soplo: en espera';
+      blowEl.style.color = mic.blowActive ? '#facc15' : '#94a3b8';
+    }
+    if (p.invuln > 0) {
+      shieldEl.textContent = 'ESCUDO ACTIVO · ' + p.invuln.toFixed(1) + 's';
+      shieldEl.style.color = '#34d399';
+    } else if (p.shieldCooldown > 0) {
+      shieldEl.textContent = 'ENFRIAMIENTO ' + p.shieldCooldown.toFixed(1) + 's';
+      shieldEl.style.color = '#f87171';
+    } else {
+      shieldEl.textContent = 'ESCUDO LISTO (Shift)';
+      shieldEl.style.color = '#34d399';
+    }
+  }
+  showLevelModal(milestoneIndex, nextLevelName) {
+    const f = SCIENCE.levelFacts[milestoneIndex] || SCIENCE.levelFacts[0];
+    $('lvlChip').textContent = f.chip;
+    $('lvlIcon').textContent = f.icon;
+    $('lvlTitle').textContent = f.title;
+    $('lvlFact').textContent = f.fact;
+    $('lvlRelation').textContent = 'Relación con el sistema inmunitario: ' + f.relation;
+    $('btnLevelContinue').textContent = nextLevelName ? ('▶ Continuar: ' + nextLevelName) : '▶ Continuar la misión';
+    this.show('screen-levelup');
+  }
+  showQuiz(question, reviveAvailable) {
+    $('quizIntro').textContent = reviveAvailable
+      ? 'Tienes una única oportunidad de demostrar tus conocimientos de biología para reactivar al glóbulo blanco. Si fallas, la misión terminará.'
+      : 'Tu reanimación ya fue utilizada en esta partida: no hay una segunda oportunidad.';
+    $('quizQuestion').textContent = question.q;
+    const labels = ['A', 'B', 'C', 'D'];
+    const box = $('quizOptions');
+    box.innerHTML = '';
+    question.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'w-full text-left rounded-lg border border-cyan-400/30 bg-slate-950/70 px-3 py-2.5 text-sm text-cyan-50 hover:border-cyan-300 hover:bg-cyan-500/10 transition';
+      b.innerHTML = `<span class="font-display text-cyan-300 mr-2">${labels[i]}.</span>${escapeHtml(opt)}`;
+      b.disabled = !reviveAvailable;
+      if (reviveAvailable) b.addEventListener('click', () => window.game.answerQuestion(i));
+      box.appendChild(b);
+    });
+    $('quizFeedback').classList.add('hidden');
+    $('btnQuizContinue').classList.add('hidden');
+    $('btnQuizGameOver').classList.add('hidden');
+    this.show('screen-quiz');
+  }
+  showQuizResult(correct, question, reviveAvailable) {
+    const fb = $('quizFeedback');
+    fb.classList.remove('hidden');
+    if (correct) {
+      fb.className = 'mt-3 rounded-xl border border-emerald-400/50 bg-emerald-500/10 p-3.5 text-sm leading-relaxed text-emerald-100 fade-in';
+      fb.innerHTML = '<strong class="text-emerald-300">✓ RESPUESTA CORRECTA</strong><br>' + escapeHtml(question.ok);
+      $('btnQuizContinue').classList.remove('hidden');
+    } else {
+      fb.className = 'mt-3 rounded-xl border border-red-400/50 bg-red-500/10 p-3.5 text-sm leading-relaxed text-red-100 fade-in';
+      fb.innerHTML = '<strong class="text-red-300">✗ RESPUESTA INCORRECTA</strong><br>' + escapeHtml(question.bad);
+      $('btnQuizGameOver').classList.remove('hidden');
+    }
+    document.querySelectorAll('#quizOptions button').forEach(b => b.disabled = true);
+  }
+  showGameOver(game) {
+    const s = game.stats;
+    $('goScore').textContent = Math.floor(s.score).toLocaleString('es');
+    $('goTime').textContent = fmtTime(game.levels.elapsed);
+    $('goKills').textContent = s.kills;
+    $('goLevel').textContent = levelNameShort(game.levels.index + 1);
+    $('goPickups').textContent = s.pickups;
+    $('goRevive').textContent = s.reviveUsed ? 'Sí (una sola oportunidad)' : 'No disponible / sin usar';
+    const best = game.leaderboard.best();
+    $('goBest').textContent = best > 0
+      ? (Math.floor(s.score).toLocaleString('es') + ' · récord local: ' + best.toLocaleString('es'))
+      : (Math.floor(s.score).toLocaleString('es') + ' · aún no hay récord');
+    $('goBest').style.color = s.score >= best && best > 0 ? '#34d399' : '#e2e8f0';
+    $('aliasInput').value = '';
+    $('saveMsg').textContent = 'El ranking se guarda localmente en este navegador (no se envía a internet).';
+    $('saveMsg').style.color = '#94a3b8';
+    const saveBtn = $('btnSaveScore');
+    saveBtn.disabled = false; saveBtn.textContent = 'Guardar';
+    this.show('screen-gameover');
+  }
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function levelNameShort(i) {
+  const names = ['Nivel 1 · Capilares', 'Nivel 2 · Arteria', 'Nivel 3 · Élite', 'Modo Élite'];
+  return names[clamp(i - 1, 0, names.length - 1)];
+}
+/* ------------------------- FONDO DEL ESCENARIO (CIRCULATORIO) ------------------------- */
+class VesselBackground {
+  constructor() { this.erythrocytes = []; this.bubbles = []; this.streaks = []; this.t = 0; this.reduced = false; }
+  rebuild(W, H) {
+    const area = (W * H) / (1280 * 720);
+    const nRed = Math.round(clamp(14 * area, 6, 26));
+    const nBub = Math.round(clamp(34 * area, 14, 60));
+    const nStr = Math.round(clamp(12 * area, 5, 20));
+    this.erythrocytes = [];
+    for (let i = 0; i < nRed; i++) {
+      this.erythrocytes.push({
+        x: rand(0, W), y: rand(0, H), r: rand(9, 20), depth: rand(0.25, 1),
+        vx: rand(-16, -4), vy: rand(-6, 6), rot: rand(0, Math.PI * 2), vr: rand(-0.5, 0.5),
+        hue: rand(345, 360)
+      });
+    }
+    this.bubbles = [];
+    for (let i = 0; i < nBub; i++) {
+      this.bubbles.push({ x: rand(0, W), y: rand(0, H), r: rand(1.2, 4), vy: rand(-14, -3), vx: rand(-4, 4), a: rand(0.1, 0.4) });
+    }
+    this.streaks = [];
+    for (let i = 0; i < nStr; i++) {
+      this.streaks.push({ x: rand(0, W), y: rand(0, H), len: rand(40, 130), v: rand(30, 90), a: rand(0.05, 0.16) });
+    }
+  }
+  update(dt, W, H) {
+    this.t += dt;
+    const k = this.reduced ? 0.35 : 1;
+    for (const e of this.erythrocytes) {
+      e.x += e.vx * e.depth * dt * k; e.y += e.vy * e.depth * dt * k; e.rot += e.vr * dt;
+      if (e.x < -e.r * 2) { e.x = W + e.r * 2; e.y = rand(0, H); }
+      if (e.y < -e.r * 2) e.y = H + e.r * 2;
+      if (e.y > H + e.r * 2) e.y = -e.r * 2;
+    }
+    for (const b of this.bubbles) {
+      b.x += b.vx * dt * k; b.y += b.vy * dt * k;
+      if (b.y < -10) { b.y = H + 10; b.x = rand(0, W); }
+      if (b.x < -10) b.x = W + 10;
+      if (b.x > W + 10) b.x = -10;
+    }
+    for (const s of this.streaks) {
+      s.x -= s.v * dt * k;
+      if (s.x + s.len < 0) { s.x = W + rand(0, W * 0.4); s.y = rand(0, H); }
+    }
+  }
+  draw(ctx, W, H) {
+    // profundidad del plasma
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#12062b');
+    bg.addColorStop(0.45, '#1b0a3a');
+    bg.addColorStop(1, '#2a0845');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // resplandor central (luz del vaso)
+    const glow = ctx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+    glow.addColorStop(0, 'rgba(88,28,135,.35)');
+    glow.addColorStop(0.6, 'rgba(30,10,60,.15)');
+    glow.addColorStop(1, 'rgba(0,0,0,.45)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    // estelas de plasma en profundidad
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const s of this.streaks) {
+      const g = ctx.createLinearGradient(s.x, s.y, s.x + s.len, s.y);
+      g.addColorStop(0, 'rgba(34,211,238,0)');
+      g.addColorStop(1, 'rgba(34,211,238,' + s.a + ')');
+      ctx.strokeStyle = g; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + s.len, s.y); ctx.stroke();
+    }
+    ctx.restore();
+
+    // eritrocitos decorativos (biconcavos)
+    for (const e of this.erythrocytes) {
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      ctx.rotate(e.rot);
+      ctx.scale(1, 0.62 + Math.sin(this.t + e.rot) * 0.12);
+      ctx.globalAlpha = 0.16 + e.depth * 0.30;
+      const g = ctx.createRadialGradient(0, 0, e.r * 0.15, 0, 0, e.r);
+      g.addColorStop(0, 'hsla(' + e.hue + ',75%,38%,1)');
+      g.addColorStop(0.55, 'hsla(' + e.hue + ',78%,52%,1)');
+      g.addColorStop(1, 'hsla(' + e.hue + ',80%,38%,1)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, e.r, 0, Math.PI * 2); ctx.fill();
+      // depresión central
+      ctx.fillStyle = 'hsla(' + e.hue + ',70%,30%,.85)';
+      ctx.beginPath(); ctx.arc(0, 0, e.r * 0.42, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'hsla(' + e.hue + ',90%,72%,.5)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(0, 0, e.r, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+
+    // paredes orgánicas del vaso (superior e inferior)
+    const drawWall = (topSide) => {
+      const amp = Math.min(46, H * 0.07);
+      const base = topSide ? 0 : H;
+      const dir = topSide ? 1 : -1;
+      ctx.beginPath();
+      ctx.moveTo(0, base);
+      const steps = 14;
+      for (let i = 0; i <= steps; i++) {
+        const x = (i / steps) * W;
+        const y = base + dir * (amp + Math.sin(i * 0.85 + this.t * 0.55) * amp * 0.45 + Math.sin(i * 1.9 - this.t * 0.35) * amp * 0.22);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, base);
+      ctx.closePath();
+      const g = ctx.createLinearGradient(0, base, 0, base + dir * amp * 2.6);
+      if (topSide) { g.addColorStop(0, 'rgba(76,10,40,.95)'); g.addColorStop(1, 'rgba(120,24,70,0)'); }
+      else { g.addColorStop(0, 'rgba(76,10,40,.95)'); g.addColorStop(1, 'rgba(120,24,70,0)'); }
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(244,114,182,.28)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    };
+    drawWall(true); drawWall(false);
+
+    // burbujas de plasma
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const b of this.bubbles) {
+      ctx.globalAlpha = b.a;
+      ctx.fillStyle = 'rgba(186,230,253,.9)';
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* ------------------------- CLASE PRINCIPAL DEL JUEGO ------------------------- */
+class Game {
+  constructor() {
+    this.canvas = $('gameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.wrap = $('stageWrap');
+    this.W = 1280; this.H = 720; this.dpr = 1;
+    this.state = 'menu';           // menu|briefing|playing|paused|levelup|quiz|gameover
+    this.ui = new UIManager();
+    this.input = new InputManager();
+    this.particles = new ParticleSystem();
+    this.mic = new MicrophoneController();
+    this.projectiles = new ProjectilePool();
+    this.enemyBullets = new ProjectilePool();
+    this.levels = new LevelManager();
+    this.questions = new QuestionManager();
+    this.leaderboard = new LeaderboardManager();
+    this.background = new VesselBackground();
+    this.enemies = [];
+    this.enemiesPool = [];
+    this.pickups = [];
+    this.player = new Player(this);
+    this.controlMode = 'keyboard';
+    this.spawnTimer = 0;
+    this.lastTime = 0;
+    this.frameId = 0;
+    this.announced = {};
+    this.stats = { score: 0, kills: 0, pickups: 0, shields: 0, reviveUsed: false, scoreSaved: false };
+    this.settings = this.loadSettings();
+    this.touchCapable = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    g_settings = () => ({ ctrlSens: this.settings.ctrlSens });
+    this.resize();
+    this.applySettingsToSystems();
+    this.bindUI();
+    this.bindTouch();
+    window.addEventListener('resize', () => this.resize());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && this.state === 'playing') {
+        this.pause();
+        this.ui.toast('Juego en pausa: perdiste el foco de la ventana.', '#facc15');
+      }
+    });
+    window.addEventListener('blur', () => { if (this.state === 'playing') this.pause(); });
+    this.frameId = requestAnimationFrame(t => this.loop(t));
+  }
+
+  /* ---------- configuración ---------- */
+  loadSettings() {
+    const def = { master: 0.7, music: 0.45, sfx: 0.75, ctrlSens: 1, blowSens: 'mid', fx: 1, micEnabled: false, reduced: false, controlPref: 'auto' };
+    const s = Storage.get(SETTINGS_KEY, null);
+    if (!s || typeof s !== 'object') return def;
+    const out = Object.assign({}, def);
+    if (typeof s.master === 'number') out.master = clamp(s.master, 0, 1);
+    if (typeof s.music === 'number') out.music = clamp(s.music, 0, 1);
+    if (typeof s.sfx === 'number') out.sfx = clamp(s.sfx, 0, 1);
+    if (typeof s.ctrlSens === 'number') out.ctrlSens = clamp(s.ctrlSens, 0.6, 1.6);
+    if (['low', 'mid', 'high'].includes(s.blowSens)) out.blowSens = s.blowSens;
+    if (typeof s.fx === 'number') out.fx = clamp(s.fx, 0, 1);
+    out.micEnabled = !!s.micEnabled;
+    out.reduced = !!s.reduced;
+    if (['auto', 'keyboard', 'touch'].includes(s.controlPref)) out.controlPref = s.controlPref;
+    return out;
+  }
+  saveSettings() { Storage.set(SETTINGS_KEY, this.settings); }
+  applySettingsToSystems() {
+    Audio2.setVolumes({ master: this.settings.master, music: this.settings.music, sfx: this.settings.sfx });
+    this.particles.intensity = this.settings.fx;
+    this.particles.reducedMotion = this.settings.reduced;
+    this.background.reduced = this.settings.reduced;
+    this.mic.setSensitivity(this.settings.blowSens);
+    this.updateControlMode();
+  }
+  updateControlMode() {
+    const pref = this.settings.controlPref;
+    this.controlMode = (pref === 'touch' || (pref === 'auto' && this.touchCapable)) ? 'touch' : 'keyboard';
+    const layer = $('touchLayer');
+    if (layer) layer.classList.toggle('hidden', this.controlMode !== 'touch');
+    this.input.touch.active = this.controlMode === 'touch';
+    if (this.controlMode !== 'touch') { this.input.touch.joyX = 0; this.input.touch.joyY = 0; this.input.touch.firing = false; }
+  }
+
+  /* ---------- dimensiones ---------- */
+  resize() {
+    const rect = this.wrap.getBoundingClientRect();
+    this.W = Math.max(320, Math.floor(rect.width));
+    this.H = Math.max(240, Math.floor(rect.height));
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.canvas.width = Math.floor(this.W * this.dpr);
+    this.canvas.height = Math.floor(this.H * this.dpr);
+    this.canvas.style.width = this.W + 'px';
+    this.canvas.style.height = this.H + 'px';
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this.background.rebuild(this.W, this.H);
+    // mantener al jugador dentro tras redimensionar
+    this.player.x = clamp(this.player.x, this.player.radius, this.W - this.player.radius);
+    this.player.y = clamp(this.player.y, this.player.radius, this.H - this.player.radius);
+  }
+
+  /* ---------- interfaz y eventos ---------- */
+  bindUI() {
+    const beep = () => Audio2.play('ui');
+    const click = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', () => { beep(); fn(); }); };
+
+    click('btnStart', () => { this.state = 'briefing'; this.syncBriefing(); this.ui.show('screen-briefing'); });
+    click('btnRanking', () => { this.ui.renderRanking(); this.ui.openModal('modal-ranking'); });
+    click('btnHowTo', () => this.ui.openModal('modal-howto'));
+    click('btnEncyclopedia', () => { this.ui.buildEncyclopedia(); this.ui.openModal('modal-encyclopedia'); });
+    click('btnSettings', () => { this.syncSettingsUI(); this.ui.openModal('modal-settings'); });
+    click('btnCredits', () => this.ui.openModal('modal-credits'));
+    document.querySelectorAll('.modal-close').forEach(b => b.addEventListener('click', () => { beep(); this.ui.closeModal(); }));
+
+    click('btnBriefBack', () => { this.state = 'menu'; this.ui.show('screen-menu'); });
+    click('btnBriefStart', () => this.startRun());
+    click('btnMicToggle', () => this.toggleMicFromBriefing());
+
+    click('btnResume', () => this.resume());
+    click('btnRestart', () => {
+      if (confirm('¿Reiniciar la partida actual? Se perderán puntuación y progreso de esta sesión.')) { this.ui.show('screen-stage'); this.startRun(); }
+    });
+    click('btnPauseSettings', () => { this.syncSettingsUI(); this.ui.openModal('modal-settings'); });
+    click('btnQuit', () => this.quitToMenu());
+
+    click('btnLevelContinue', () => this.continueAfterLevel());
+    click('btnQuizContinue', () => this.resumeAfterRevive());
+    click('btnQuizGameOver', () => this.finishGame(this.lastGameOverReason || 'El protocolo de reanimación falló.'));
+
+    click('btnSaveScore', () => this.saveScore());
+    click('btnGoRanking', () => { this.ui.renderRanking(); this.ui.openModal('modal-ranking'); });
+    click('btnGoAgain', () => { this.ui.show('screen-stage'); this.startRun(); });
+    click('btnGoMenu', () => this.quitToMenu());
+
+    click('btnSettingsApply', () => { this.readSettingsUI(); this.saveSettings(); this.applySettingsToSystems(); this.ui.closeModal(); this.ui.toast('Ajustes aplicados.', '#34d399'); });
+    click('btnSettingsReset', () => {
+      this.settings = { master: 0.7, music: 0.45, sfx: 0.75, ctrlSens: 1, blowSens: 'mid', fx: 1, micEnabled: false, reduced: false, controlPref: 'auto' };
+      this.syncSettingsUI(); this.saveSettings(); this.applySettingsToSystems();
+      this.ui.toast('Ajustes restablecidos.', '#22d3ee');
+    });
+    document.querySelectorAll('#ctrlPrefGroup button').forEach(b => b.addEventListener('click', () => {
+      this.settings.controlPref = b.dataset.pref; this.syncSettingsUI();
+    }));
+
+    // teclado global
+    this.input.preventGameScroll = () => this.state === 'playing' || this.state === 'paused' || this.state === 'levelup';
+    this.input.onPause = () => {
+      if (this.ui.activeModal) { this.ui.closeModal(); return; }
+      if (this.state === 'playing') this.pause();
+      else if (this.state === 'paused') this.resume();
+    };
+    this.input.onShieldKey = () => { if (this.state === 'playing') this.player.activateShield('shift'); };
+    this.input.attachCanvas(this.canvas);
+
+    // estado del micrófono -> avisos
+    this.mic.onStateChange = (st, err) => {
+      const map = {
+        off: 'Micrófono desactivado. Usa Shift para activar el escudo.',
+        requesting: 'Solicitando permiso de micrófono…',
+        calibrating: 'Calibrando: permanece en silencio 2 segundos.',
+        active: 'Micrófono activo. Sopla fuerte para activar el Escudo de Pulso Inmune.',
+        error: (err || 'Error de micrófono') + ' Puedes jugar con Shift.'
+      };
+      this.ui.toast(map[st] || '', st === 'error' ? '#f87171' : (st === 'active' ? '#34d399' : '#22d3ee'), 3400);
+      this.syncBriefing();
+    };
+    this.mic.onShieldReady = (src) => { if (this.state === 'playing') this.player.activateShield(src); };
+    this.mic.onCalibProgress = (pct, level) => {
+      const bar = $('calibBar'), txt = $('calibPct');
+      if (bar) bar.style.width = (pct * 100).toFixed(0) + '%';
+      if (txt) txt.textContent = (pct * 100).toFixed(0) + '%';
+    };
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.settings.reduced = true; this.syncSettingsUI(); this.applySettingsToSystems();
+    }
+  }
+
+  bindTouch() {
+    const base = $('joyBase'), knob = $('joyKnob'), layer = $('touchLayer');
+    let joyId = null, cx = 0, cy = 0;
+    const radius = 52;
+    const setKnob = (dx, dy) => { knob.style.left = (38 + dx) + 'px'; knob.style.top = (38 + dy) + 'px'; };
+    const resetJoy = () => { joyId = null; this.input.touch.joyX = 0; this.input.touch.joyY = 0; setKnob(0, 0); base.style.display = 'none'; };
+
+    layer.addEventListener('pointerdown', e => {
+      const t = e.target;
+      if (t.id === 'btnFire' || t.id === 'btnShield' || t.id === 'btnPause') return;
+      const r = layer.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      if (x < r.width * 0.55) {  // zona izquierda: joystick
+        joyId = e.pointerId;
+        cx = x; cy = y;
+        base.style.display = 'block';
+        base.style.left = (x - 66) + 'px'; base.style.top = (y - 66) + 'px';
+        setKnob(0, 0);
+        layer.setPointerCapture(e.pointerId);
+      }
+      e.preventDefault();
+    }, { passive: false });
+    layer.addEventListener('pointermove', e => {
+      if (e.pointerId !== joyId) return;
+      const r = layer.getBoundingClientRect();
+      let dx = (e.clientX - r.left) - cx, dy = (e.clientY - r.top) - cy;
+      const d = Math.hypot(dx, dy);
+      if (d > radius) { dx = dx / d * radius; dy = dy / d * radius; }
+      this.input.touch.joyX = dx / radius; this.input.touch.joyY = dy / radius;
+      setKnob(dx, dy);
+      e.preventDefault();
+    }, { passive: false });
+    const endJoy = e => { if (e.pointerId === joyId) resetJoy(); };
+    layer.addEventListener('pointerup', endJoy);
+    layer.addEventListener('pointercancel', endJoy);
+
+    const fire = $('btnFire');
+    fire.addEventListener('pointerdown', e => { this.input.touch.firing = true; fire.setPointerCapture(e.pointerId); e.preventDefault(); }, { passive: false });
+    fire.addEventListener('pointerup', () => { this.input.touch.firing = false; });
+    fire.addEventListener('pointercancel', () => { this.input.touch.firing = false; });
+    $('btnShield').addEventListener('pointerdown', e => { if (this.state === 'playing') this.player.activateShield('touch'); e.preventDefault(); }, { passive: false });
+    $('btnPause').addEventListener('pointerdown', e => { if (this.state === 'playing') this.pause(); e.preventDefault(); }, { passive: false });
+  }
+
+  syncSettingsUI() {
+    const s = this.settings;
+    $('setMaster').value = Math.round(s.master * 100); $('lblMaster').textContent = Math.round(s.master * 100) + '%';
+    $('setMusic').value = Math.round(s.music * 100); $('lblMusic').textContent = Math.round(s.music * 100) + '%';
+    $('setSfx').value = Math.round(s.sfx * 100); $('lblSfx').textContent = Math.round(s.sfx * 100) + '%';
+    $('setCtrl').value = Math.round(s.ctrlSens * 100); $('lblCtrl').textContent = Math.round(s.ctrlSens * 100) + '%';
+    $('setBlow').value = { low: 1, mid: 2, high: 3 }[s.blowSens]; $('lblBlow').textContent = { low: 'Baja', mid: 'Media', high: 'Alta' }[s.blowSens];
+    $('setFx').value = Math.round(s.fx * 100); $('lblFx').textContent = Math.round(s.fx * 100) + '%';
+    $('setMic').checked = s.micEnabled;
+    $('setReduced').checked = s.reduced;
+    document.querySelectorAll('#ctrlPrefGroup button').forEach(b => {
+      const on = b.dataset.pref === s.controlPref;
+      b.style.borderColor = on ? '#34d399' : 'rgba(34,211,238,.45)';
+      b.style.boxShadow = on ? '0 0 18px rgba(52,211,153,.5)' : 'none';
+    });
+  }
+  readSettingsUI() {
+    const s = this.settings;
+    s.master = clamp(parseInt($('setMaster').value, 10) / 100, 0, 1);
+    s.music = clamp(parseInt($('setMusic').value, 10) / 100, 0, 1);
+    s.sfx = clamp(parseInt($('setSfx').value, 10) / 100, 0, 1);
+    s.ctrlSens = clamp(parseInt($('setCtrl').value, 10) / 100, 0.6, 1.6);
+    s.blowSens = { 1: 'low', 2: 'mid', 3: 'high' }[parseInt($('setBlow').value, 10)] || 'mid';
+    s.fx = clamp(parseInt($('setFx').value, 10) / 100, 0, 1);
+    s.micEnabled = $('setMic').checked;
+    s.reduced = $('setReduced').checked;
+  }
+  syncBriefing() {
+    const mic = this.mic;
+    const status = $('briefMicStatus');
+    const map = {
+      off: 'Micrófono desactivado', requesting: 'Esperando permiso…', calibrating: 'Calibrando…',
+      active: 'Micrófono activo · detector listo', error: 'Error: ' + (mic.lastError || 'sin acceso')
+    };
+    status.textContent = map[mic.state] || 'Micrófono desactivado';
+    status.style.color = mic.state === 'active' ? '#34d399' : (mic.state === 'error' ? '#f87171' : '#cbd5e1');
+    $('btnMicToggle').textContent = (mic.state === 'active' || mic.state === 'calibrating') ? '🔇 Desactivar micrófono' : '🎙 Activar micrófono';
+    $('calibBox').classList.toggle('hidden', mic.state !== 'calibrating');
+    $('briefSens').textContent = { low: 'Baja', mid: 'Media', high: 'Alta' }[this.settings.blowSens];
+  }
+  async toggleMicFromBriefing() {
+    const mic = this.mic;
+    if (mic.state === 'active' || mic.state === 'calibrating') {
+      mic.disable(); this.settings.micEnabled = false; this.saveSettings(); this.syncBriefing();
+      return;
+    }
+    const ok = await mic.enable();
+    this.settings.micEnabled = ok; this.saveSettings();
+    this.syncBriefing();
+    if (!ok) this.ui.toast(mic.lastError || 'No se pudo activar el micrófono. Juega con Shift.', '#f87171', 3800);
+  }
+
+  /* ---------- ciclo de partida ---------- */
+  startRun() {
+    Audio2.ensure();
+    Audio2.startMusic();
+    this.state = 'playing';
+    this.ui.show('screen-stage');
+    this.resize();
+    this.enemies.forEach(e => this.enemiesPool.push(e));
+    this.enemies.length = 0;
+    this.pickups.length = 0;
+    this.projectiles.clear();
+    this.enemyBullets.clear();
+    this.particles.clear();
+    this.levels.reset();
+    this.player.reset();
+    this.spawnTimer = 1.6;
+    this.announced = {};
+    this.lastGameOverReason = null;
+    this.stats = { score: 0, kills: 0, pickups: 0, shields: 0, reviveUsed: false, scoreSaved: false };
+    this.input.clear();
+    this.ui.lastHp = 1;
+    this.ui.banner(this.levels.config.name, '#22d3ee');
+    this.ui.toast('Objetivo: eliminar los 15 enemigos del nivel para avanzar.', '#facc15');
+    if (this.mic.state === 'active') this.ui.toast('Detector de soplo activo. Sopla fuerte para el escudo.', '#34d399');
+    else this.ui.toast('Sin micrófono: usa Shift para activar el Escudo de Pulso Inmune.', '#22d3ee');
+  }
+  pause() {
+    if (this.state !== 'playing') return;
+    this.state = 'paused';
+    this.input.clear();
+    this.ui.show('screen-pause');
+  }
+  resume() {
+    if (this.state !== 'paused') return;
+    this.state = 'playing';
+    this.ui.show('screen-stage');
+    this.lastTime = performance.now();
+  }
+  quitToMenu() {
+    this.state = 'menu';
+    this.input.clear();
+    this.enemies.forEach(e => this.enemiesPool.push(e));
+    this.enemies.length = 0;
+    this.pickups.length = 0;
+    this.projectiles.clear(); this.enemyBullets.clear();
+    this.particles.clear();
+    Audio2.stopMusic();
+    this.ui.show('screen-menu');
+    this.ui.closeModal();
+  }
+
+  /* ---------- generación de enemigos ---------- */
+  spawnEnemy() {
+    const cfg = this.levels.config;
+    // tope exacto por nivel: solo se generan los enemigos que faltan por eliminar
+    if (!this.levels.isFinalLevel && this.levels.enemiesSpawnedThisLevel >= this.levels.killsRequired) return;
+    // ponderación de tipos según nivel
+    const entries = Object.entries(cfg.weight).filter(([, w]) => w > 0);
+    if (!entries.length) return;
+    let total = 0; entries.forEach(([, w]) => total += w);
+    let r = Math.random() * total, type = entries[0][0];
+    for (const [t, w] of entries) { r -= w; if (r <= 0) { type = t; break; } }
+
+    // aparece fuera del área inmediata del jugador, repartido por los bordes
+    const m = CONFIG.spawn.margin;
+    let x = 0, y = 0, tries = 0;
+    do {
+      const side = randInt(0, 3);
+      if (side === 0) { x = rand(-m, this.W + m); y = -m; }
+      else if (side === 1) { x = this.W + m; y = rand(-m, this.H + m); }
+      else if (side === 2) { x = rand(-m, this.W + m); y = this.H + m; }
+      else { x = -m; y = rand(-m, this.H + m); }
+      tries++;
+    } while (dist2(x, y, this.player.x, this.player.y) < CONFIG.spawn.minDistanceFromPlayer * CONFIG.spawn.minDistanceFromPlayer && tries < 12);
+
+    const e = this.enemiesPool.pop() || new Enemy(this);
+    e.init(type, clamp(x, 0, this.W), clamp(y, 0, this.H), cfg);
+    this.enemies.push(e);
+    this.levels.enemiesSpawnedThisLevel++;
+    if (!this.announced[type] && type === 'shielded') {
+      this.announced[type] = true;
+      this.ui.banner('ENEMIGOS CON ESCUDO · EL ANILLO DORADO ABSORBE EL DAÑO', '#fbbf24');
+    }
+  }
+  nearestEnemy(x, y, maxDist) {
+    let best = null, bestD = maxDist * maxDist;
+    for (let i = 0; i < this.enemies.length; i++) {
+      const e = this.enemies[i];
+      const d = dist2(x, y, e.x, e.y);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return best;
+  }
+  damageEnemy(e, dmg) {
+    const res = e.applyDamage(dmg, this.particles);
+    this.particles.burst(e.x, e.y, 4, '#fef08a', 180, 2, 0.3);
+    if (e.hp <= 0) this.killEnemy(e, res);
+    else Audio2.play('hit');
+  }
+  killEnemy(e) {
+    if (e.dead) return;
+    e.dead = true; e.active = false;
+    // ÚNICO punto de suma por enemigo: la puntuación ya no sube con el tiempo
+    this.stats.score += e.scoreValue;
+    this.stats.kills++;
+    const color = e.type === 'shielded' ? '#fbbf24' : (e.type.startsWith('virus') ? '#f472b6' : '#4ade80');
+    this.particles.burst(e.x, e.y, e.type === 'shielded' ? 26 : 16, color, 300, 3.4, 0.7);
+    this.particles.burst(e.x, e.y, 8, '#ffffff', 220, 2.4, 0.4);
+    Audio2.play('explode');
+    if (Math.random() < CONFIG.pickup.dropChance) {
+      const p = this.pickups.find(k => !k.active) || new Pickup();
+      const roll = Math.random();
+      p.init(e.x, e.y, roll < 0.45 ? 'health' : (roll < 0.75 ? 'energy' : 'score'));
+      if (!this.pickups.includes(p)) this.pickups.push(p);
+    }
+    // avance de nivel: se sube solo cuando se eliminan los 15 enemigos del nivel
+    if (this.state === 'playing' && this.levels.registerKill()) this.advanceLevel();
+  }
+  /** Muestra el modal científico y pasa al siguiente nivel. */
+  advanceLevel() {
+    const finished = this.levels.advance();
+    if (finished < 0) return;
+    this.state = 'levelup';
+    this.input.clear();
+    this.stats.score += CONFIG.levelBonus[finished + 1] || 0;
+    const next = CONFIG.levels[this.levels.index];
+    this.ui.showLevelModal(finished, next ? next.name : null);
+    Audio2.play('levelup');
+  }
+
+  /* ---------- reanimación y fin de partida ---------- */
+  answerQuestion(index) {
+    const q = this.questions.current;
+    if (!q) return;
+    const correct = index === q.correct;
+    if (correct) {
+      this.stats.score += CONFIG.scoring.quizCorrect;
+      this.stats.reviveUsed = true;
+      Audio2.play('quizOk');
+      this.ui.showQuizResult(true, q, true);
+    } else {
+      Audio2.play('quizBad');
+      this.ui.showQuizResult(false, q, false);
+      this.lastGameOverReason = 'El protocolo de reanimación falló: respuesta incorrecta en el reto educativo.';
+    }
+  }
+  resumeAfterRevive() {
+    const p = this.player;
+    p.health = Math.max(1, Math.round(p.maxHealth * 0.5));   // 50 % del máximo
+    p.alive = true;
+    p.invuln = 2.5;
+    p.hitTimer = 0;
+    p.shieldCooldown = 0;
+    this.state = 'playing';
+    this.ui.show('screen-stage');
+    this.particles.burst(p.x, p.y, 44, '#34d399', 380, 3.6, 0.9);
+    this.particles.shockwave(p.x, p.y, 220, 'rgba(52,211,153,.9)', 0.6);
+    Audio2.play('revive');
+    this.ui.banner('REANIMACIÓN EXITOSA · INTEGRIDAD 50%', '#34d399');
+    this.lastTime = performance.now();
+  }
+  finishGame(reason) {
+    if (this.state === 'gameover') return;              // evita doble pantalla
+    this.state = 'gameover';
+    this.input.clear();
+    Audio2.stopMusic();
+    Audio2.play('gameover');
+    $('goReason').textContent = reason || 'El glóbulo blanco fue superado por la infección.';
+    this.ui.showGameOver(this);
+  }
+  saveScore() {
+    if (this.stats.scoreSaved) return;
+    const alias = LeaderboardManager.sanitizeAlias($('aliasInput').value);
+    if (!alias) {
+      $('saveMsg').textContent = 'Escribe un alias válido (1 a 16 caracteres) antes de guardar.';
+      $('saveMsg').style.color = '#f87171';
+      return;
+    }
+    const d = new Date();
+    const entry = {
+      alias,
+      score: Math.max(0, Math.floor(this.stats.score)),
+      time: Math.round(this.levels.elapsed),
+      level: this.levels.index + 1,
+      date: d.toLocaleDateString('es-CO') + ' ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+    };
+    const ok = this.leaderboard.add(entry);
+    if (ok) {
+      this.stats.scoreSaved = true;
+      $('saveMsg').textContent = 'Resultado registrado. Ya está en el ranking local (Top 5).';
+      $('saveMsg').style.color = '#34d399';
+      const btn = $('btnSaveScore');
+      btn.disabled = true; btn.textContent = 'Guardado';
+      this.ui.toast('Puntuación guardada en este navegador.', '#34d399');
+    } else {
+      $('saveMsg').textContent = 'No se pudo escribir en el almacenamiento local del navegador.';
+      $('saveMsg').style.color = '#f87171';
+    }
+  }
+
+  /* ---------- daño y fin de fase ---------- */
+  checkPlayerDeath() {
+    if (this.player.alive || this.state !== 'playing') return;
+    if (!this.stats.reviveUsed) {
+      this.stats.reviveUsed = true;                 // se marca ANTES de mostrar el modal
+      this.state = 'quiz';
+      this.input.clear();
+      const q = this.questions.next();
+      this.ui.showQuiz(q, true);
+    } else {
+      this.finishGame('Integridad celular al 0 % y reanimación ya utilizada en esta partida.');
+    }
+  }
+  continueAfterLevel() {
+    this.state = 'playing';
+    this.ui.show('screen-stage');
+    this.lastTime = performance.now();
+  }
+
+  /* ---------- actualización ---------- */
+  update(dt) {
+    this.background.update(dt, this.W, this.H);
+    this.particles.update(dt);
+    this.mic.update(dt);
+    if (this.state === 'briefing') this.ui.updateLiveMic(this.mic);
+    if (this.state !== 'playing') return;
+
+    this.levels.update(dt);
+    const cfg = this.levels.config;
+
+    // aparición progresiva
+    this.spawnTimer -= dt;
+    if (this.spawnTimer <= 0 && this.enemies.length < cfg.maxEnemies) {
+      this.spawnEnemy();
+      this.spawnTimer = cfg.spawnInterval * rand(0.72, 1.28);
+    }
+
+    this.player.update(dt, this.input);
+
+    // enemigos
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      const e = this.enemies[i];
+      if (!e.active) { this.enemies.splice(i, 1); this.enemiesPool.push(e); continue; }
+      e.update(dt, this);
+      // colisión con el jugador
+      if (this.player.alive && e.spawnAnim <= 0) {
+        const rr = e.radius + this.player.radius * 0.85;
+        if (dist2(e.x, e.y, this.player.x, this.player.y) < rr * rr) {
+          if (this.player.invuln > 0) {
+            // empuje suave al chocar con el escudo activo
+            const dx = e.x - this.player.x, dy = e.y - this.player.y;
+            const d = Math.hypot(dx, dy) || 1;
+            e.vx = dx / d * 320; e.vy = dy / d * 320; e.pushTimer = 0.25;
+            this.particles.burst(e.x, e.y, 5, '#34d399', 160, 2, 0.3);
+          } else if (this.player.takeDamage(e.damage)) {
+            const dx = e.x - this.player.x, dy = e.y - this.player.y;
+            const d = Math.hypot(dx, dy) || 1;
+            this.player.vx -= dx / d * CONFIG.player.contactKnockback;
+            this.player.vy -= dy / d * CONFIG.player.contactKnockback;
+            e.vx = dx / d * 220; e.vy = dy / d * 220; e.pushTimer = 0.2;
+          }
+        }
+      }
+    }
+
+    // proyectiles del jugador vs enemigos
+    const projs = this.projectiles.items;
+    for (let i = projs.length - 1; i >= 0; i--) {
+      const p = projs[i];
+      if (p.dead) continue;
+      for (let j = 0; j < this.enemies.length; j++) {
+        const e = this.enemies[j];
+        if (!e.active) continue;
+        const rr = e.radius + p.radius;
+        if (dist2(p.x, p.y, e.x, e.y) < rr * rr) {
+          p.dead = true;                           // un proyectil causa daño una sola vez
+          this.damageEnemy(e, p.damage);
+          break;
+        }
+      }
+    }
+    this.projectiles.update(dt, this.W, this.H);
+
+    // proyectiles enemigos vs jugador
+    const eb = this.enemyBullets.items;
+    for (let i = eb.length - 1; i >= 0; i--) {
+      const b = eb[i];
+      if (b.dead) continue;
+      const rr = b.radius + this.player.radius * 0.85;
+      if (this.player.alive && dist2(b.x, b.y, this.player.x, this.player.y) < rr * rr) {
+        b.dead = true;
+        if (this.player.invuln <= 0 && this.player.takeDamage(b.damage)) {
+          this.particles.burst(b.x, b.y, 8, '#f472b6', 200, 2.4, 0.4);
+        }
+      }
+    }
+    this.enemyBullets.update(dt, this.W, this.H);
+
+    // recogibles
+    for (let i = this.pickups.length - 1; i >= 0; i--) {
+      const k = this.pickups[i];
+      if (!k.active) { this.pickups.splice(i, 1); continue; }
+      k.update(dt);
+      const rr = k.radius + this.player.radius;
+      if (this.player.alive && dist2(k.x, k.y, this.player.x, this.player.y) < rr * rr) {
+        k.active = false;
+        this.stats.pickups++;
+        if (k.type === 'health') {
+          this.player.health = clamp(this.player.health + 25, 0, this.player.maxHealth);
+          this.ui.banner('+25 INTEGRIDAD', '#34d399');
+        } else if (k.type === 'energy') {
+          this.player.shieldCooldown = Math.max(0, this.player.shieldCooldown - 3);
+          this.ui.banner('ESCUDO RECARGADO −3 s', '#22d3ee');
+        } else {
+          this.stats.score += CONFIG.scoring.pickupScore;
+          this.ui.banner('+' + CONFIG.scoring.pickupScore + ' PUNTOS', '#facc15');
+        }
+        this.particles.burst(k.x, k.y, 14, k.type === 'health' ? '#34d399' : (k.type === 'energy' ? '#22d3ee' : '#facc15'), 240, 3, 0.6);
+        Audio2.play('pickup');
+      }
+    }
+
+    // puntuación: ya NO se suma con el tiempo; solo por enemigos, objetos y niveles
+
+    this.checkPlayerDeath();
+    if (this.state !== 'playing') { this.ui.updateHUD(this); return; }
+
+    this.ui.updateHUD(this);
+  }
+
+  /* ---------- render ---------- */
+  render() {
+    const ctx = this.ctx;
+    ctx.save();
+    if (this.particles.shakeMag > 0) {
+      ctx.translate(rand(-1, 1) * this.particles.shakeMag, rand(-1, 1) * this.particles.shakeMag);
+    }
+    this.background.draw(ctx, this.W, this.H);
+    // en el menú y la preparación solo se ve el entorno circulatorio animado
+    if (this.state !== 'menu' && this.state !== 'briefing') {
+      for (let i = 0; i < this.pickups.length; i++) if (this.pickups[i].active) this.pickups[i].draw(ctx);
+      for (let i = 0; i < this.enemies.length; i++) this.enemies[i].draw(ctx);
+      this.projectiles.draw(ctx, this.particles);
+      this.enemyBullets.draw(ctx, this.particles);
+      this.player.draw(ctx);
+    }
+    this.particles.draw(ctx);
+    ctx.restore();
+  }
+
+  loop(t) {
+    // delta limitado: evita teletransporte tras pausas o cambios de pestaña
+    const rawDt = this.lastTime ? (t - this.lastTime) / 1000 : 0.016;
+    this.lastTime = t;
+    const dt = Math.min(Math.max(rawDt, 0), 0.05);
+    try {
+      this.update(dt);
+      this.render();
+    } catch (err) {
+      console.error('[Game] error en el bucle:', err);
+    }
+    this.frameId = requestAnimationFrame(tt => this.loop(tt));
+  }
+}
+
+/* ------------------------- ARRANQUE ------------------------- */
+window.addEventListener('DOMContentLoaded', () => {
+  const game = new Game();
+  window.game = game;
+  game.ui.show('screen-menu');
+  // el audio necesita un gesto del usuario en Chrome
+  const unlock = () => { Audio2.ensure(); Audio2.applyVolumes(); };
+  window.addEventListener('pointerdown', unlock, { once: true });
+  window.addEventListener('keydown', unlock, { once: true });
+  console.info('%cCellular Dash: Misión Inmunológica', 'color:#22d3ee;font-size:14px;font-weight:bold',
+    '\nProyecto educativo · Lesly Yeraldine Ruiz Jaimes, Emma Gabriela Palacios Beltran · Grado 10-3');
+});
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
